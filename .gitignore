@@ -1,0 +1,11 @@
+# Python / Docker
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Node.js
+frontend/node_modules/
+frontend/dist/
+.npm/
+npm-debug.log*

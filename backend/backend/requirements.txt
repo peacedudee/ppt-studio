@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+celery
+redis
+python-pptx==0.6.23
+lxml==5.2.2
+Pillow==10.4.0
+requests
+pytest
+httpx
+python-multipart
+google-generativeai
+PyMuPDF
+python-docx
+imagehash

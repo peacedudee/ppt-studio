@@ -1,0 +1,435 @@
+[
+  {
+    "slide_title": "Resources & Access",
+    "slide_content": [
+      "Cloud computing overview",
+      "Google Cloud pricing structure",
+      "Google's security & sustainability",
+      "Functional structure of Google Cloud"
+    ],
+    "speaker_notes": "This section introduces the functional structure of Google Cloud. It covers cloud computing, Google Cloud's pricing and billing, security measures, and environmental efforts. It transitions into explaining the functional components of the Google Cloud platform."
+  },
+  {
+    "slide_title": "Resource Hierarchy",
+    "slide_content": [
+      "Resource organization with projects",
+      "Access management via IAM",
+      "Interaction methods with Google Cloud",
+      "Web UI, CLI, and mobile apps"
+    ],
+    "speaker_notes": "This section explains how resources are organized within Google Cloud using projects. It describes how access is managed through Identity and Access Management (IAM). It also discusses the different ways users can interact with Google Cloud, including the web user interface, command-line interface, and mobile apps."
+  },
+  {
+    "slide_title": "Resource Hierarchy",
+    "slide_content": [
+      "Google Cloud Resource Hierarchy",
+      "Identity and Access Management (IAM)",
+      "IAM roles, Service accounts",
+      "Cloud Identity and Interaction"
+    ],
+    "speaker_notes": "This slide introduces the Google Cloud Resource Hierarchy and its role in organizing resources. It mentions Identity and Access Management (IAM), IAM roles, service accounts, Cloud Identity, and ways to interact with Google Cloud as key components of the discussed topics."
+  },
+  {
+    "slide_title": "Resource Hierarchy",
+    "slide_content": [
+      "Four-level hierarchy",
+      "Resources: VMs, storage, networks, etc.",
+      "Organized into projects",
+      "Folders and organization node"
+    ],
+    "speaker_notes": "This slide describes the four levels of the Google Cloud resource hierarchy: resources, projects, folders, and an organization node. Resources represent virtual machines, storage buckets, and other Google Cloud services. Resources are organized into projects, which are further organized into folders. The organization node encompasses all projects, folders, and resources."
+  },
+  {
+    "slide_title": "Hierarchy Determines Policies",
+    "slide_content": [
+      "Resource hierarchy relates to policy",
+      "Policies at project, folder, organization",
+      "Policies inherited downward"
+    ],
+    "speaker_notes": "The resource hierarchy dictates how policies are managed and applied. Policies can be defined at the project, folder, and organization node levels. Policies are inherited downward, meaning a policy applied to a folder will also apply to all projects within that folder."
+  },
+  {
+    "slide_title": "Projects: Cloud Basis",
+    "slide_content": [
+      "Basis for Cloud services",
+      "Different owners/users",
+      "Each resource belongs to a project",
+      "Projects are billed separately"
+    ],
+    "speaker_notes": "Projects are the foundation for enabling and using Google Cloud services, such as managing APIs, enabling billing, and adding collaborators. Each project is a separate entity, and each resource belongs to exactly one project. Projects can have different owners and users and are billed and managed separately."
+  },
+  {
+    "slide_title": "Project Attributes",
+    "slide_content": [
+      "Project ID: Globally unique, immutable",
+      "Project name: Mutable, not unique",
+      "Project number: Unique, immutable"
+    ],
+    "speaker_notes": "Each Google Cloud project has three identifying attributes: a project ID, a project name, and a project number. The project ID is a globally unique identifier that cannot be changed after creation. Project names are user-created and can be changed. Google Cloud also assigns each project a unique project number for internal tracking."
+  },
+  {
+    "slide_title": "Resource Manager",
+    "slide_content": [
+      "Manages projects programmatically",
+      "Create, update, delete projects",
+      "Recover deleted projects",
+      "Accessed via RPC and REST APIs"
+    ],
+    "speaker_notes": "The Resource Manager tool is used to programmatically manage projects. It provides an API to list projects, create new projects, update existing projects, and delete projects. It can also recover previously deleted projects and can be accessed through the RPC and REST APIs."
+  },
+  {
+    "slide_title": "Folders: Granular Policies",
+    "slide_content": [
+      "Folders contain projects and subfolders",
+      "Inherit policies/permissions",
+      "Assign policies at granular level"
+    ],
+    "speaker_notes": "Folders allow for assigning policies to resources at a chosen level of granularity. Projects and subfolders within a folder inherit policies and permissions assigned to that folder. A folder can contain projects, other folders, or a combination of both."
+  },
+  {
+    "slide_title": "Folders Group Projects",
+    "slide_content": [
+      "Group projects under hierarchy",
+      "Group resources per-department",
+      "Delegate administrative rights"
+    ],
+    "speaker_notes": "Folders allow for grouping projects under an organization in a hierarchy. They can be used to group resources on a per-department basis. Folders enable teams to delegate administrative rights, allowing them to work independently."
+  },
+  {
+    "slide_title": "Policy Inheritance",
+    "slide_content": [
+      "Resources inherit folder policies",
+      "Common policies in shared folder",
+      "Avoid policy duplication errors"
+    ],
+    "speaker_notes": "Resources in a folder inherit policies and permissions from that folder. Storing common policies in a shared folder ensures consistency and reduces errors compared to duplicating policies across multiple projects."
+  },
+  {
+    "slide_title": "Organization Node",
+    "slide_content": [
+      "Topmost resource in hierarchy",
+      "Everything attached to account"
+    ],
+    "speaker_notes": "The organization node is the topmost resource in the Google Cloud hierarchy. Everything attached to the account, including projects, folders, and other resources, falls under this node."
+  },
+  {
+    "slide_title": "Special Roles",
+    "slide_content": [
+      "Organization policy administrator",
+      "Project creator role"
+    ],
+    "speaker_notes": "There are special roles associated with the organization node. These roles include the organization policy administrator, who can change policies, and the project creator role, which controls who can create projects."
+  },
+  {
+    "slide_title": "New Organization Node",
+    "slide_content": [
+      "Workspace customers: auto belong",
+      "Non-Workspace: use Cloud Identity",
+      "Create folders and projects after"
+    ],
+    "speaker_notes": "Creating an organization node depends on whether the company is a Google Workspace customer. Workspace customers automatically have their Google Cloud projects belong to their organization node. Non-Workspace customers can use Cloud Identity to create one. After creating an organization node, you can create folders and put projects into it."
+  },
+  {
+    "slide_title": "Identity & Access Management",
+    "slide_content": [
+      "Google Cloud Resource Hierarchy",
+      "IAM for access management",
+      "IAM roles and service accounts",
+      "Cloud Identity"
+    ],
+    "speaker_notes": "This slide highlights Identity and Access Management (IAM) as a key component of Google Cloud. IAM is used for access management, assigning roles, managing service accounts, and leveraging Cloud Identity for centralized user management."
+  },
+  {
+    "slide_title": "IAM Applies Policies",
+    "slide_content": [
+      "Administrators define policies",
+      "Policies determine access",
+      "Principal (who) + Role (can do what)"
+    ],
+    "speaker_notes": "IAM enables administrators to apply policies that define who can do what on which resources. The 'who' is a principal, such as a Google account or service account, and the 'can do what' is defined by an IAM role, which is a collection of permissions."
+  },
+  {
+    "slide_title": "Policy Inheritance",
+    "slide_content": [
+      "Policies managed and applied by IAM",
+      "Policies apply to chosen element",
+      "Applied to all elements below in hierarchy"
+    ],
+    "speaker_notes": "When a principal is given a role on a specific element of the resource hierarchy, the resulting policy applies to the chosen element and all elements below it in the hierarchy. This ensures consistent access control across resources."
+  },
+  {
+    "slide_title": "Deny Policies",
+    "slide_content": [
+      "Prevent specific IAM permissions",
+      "Overrides existing allow policies",
+      "Inherited through resource hierarchy"
+    ],
+    "speaker_notes": "Deny policies prevent certain principals from using specific permissions, regardless of the roles they're granted. IAM always checks relevant deny policies before allow policies. Deny policies, like allow policies, are inherited through the resource hierarchy."
+  },
+  {
+    "slide_title": "IAM Roles",
+    "slide_content": [
+      "Google Cloud Resource Hierarchy",
+      "Identity and Access Management (IAM)",
+      "IAM roles, Service accounts",
+      "Cloud Identity"
+    ],
+    "speaker_notes": "This slide serves as a transition to discussing the different types of IAM roles available in Google Cloud. It reinforces the context of the resource hierarchy and the role of IAM in access management."
+  },
+  {
+    "slide_title": "Three Kinds of Roles",
+    "slide_content": [
+      "Basic IAM Role",
+      "Predefined IAM Role",
+      "Custom IAM Role"
+    ],
+    "speaker_notes": "There are three types of roles in IAM: Basic, Predefined, and Custom. Each role type offers a different level of granularity and control over permissions."
+  },
+  {
+    "slide_title": "Basic IAM Roles",
+    "slide_content": [
+      "Broad in scope",
+      "Affect all resources in project",
+      "Include: Owner, Editor, Viewer, Billing Admin"
+    ],
+    "speaker_notes": "Basic roles are broad in scope and affect all resources within a Google Cloud project. These roles include Project Viewer, Project Editor, Project Owner, and Billing Administrator. Basic roles are often too broad for projects containing sensitive data."
+  },
+  {
+    "slide_title": "Predefined Roles",
+    "slide_content": [
+      "Match job needs",
+      "Offered by Google Cloud services",
+      "Specific actions for Compute Engine"
+    ],
+    "speaker_notes": "Predefined roles are offered by specific Google Cloud services and define where those roles can be applied. For example, Compute Engine offers predefined roles like 'instanceAdmin' that allows users to perform specific actions on Compute Engine resources."
+  },
+  {
+    "slide_title": "Custom Roles",
+    "slide_content": [
+      "More specific, flexible permissions",
+      "Least-privilege model",
+      "Define an instanceOperator role"
+    ],
+    "speaker_notes": "Custom roles provide even more specific permissions. Many companies use a \u201cleast-privilege\u201d model, where each person is given the minimal amount of privilege needed to do their job. Custom roles enable defining roles with granular control over permissions."
+  },
+  {
+    "slide_title": "Custom Roles Management",
+    "slide_content": [
+      "Created at project or organization level",
+      "Permissions need to be managed",
+      "An organization-level role",
+      "A project-level custom role"
+    ],
+    "speaker_notes": "Custom roles can be created at the project or organization level but not at the folder level. Organization-level roles can include any supported IAM permission. Project-level roles can include any supported permission except those only usable at the organization or folder level."
+  },
+  {
+    "slide_title": "Service Accounts",
+    "slide_content": [
+      "Google Cloud Resource Hierarchy",
+      "Identity and Access Management (IAM)",
+      "IAM roles, Service accounts",
+      "Cloud Identity"
+    ],
+    "speaker_notes": "Transition slide to introducing service accounts. It places service accounts within the context of the broader Google Cloud Resource Hierarchy and its security features."
+  },
+  {
+    "slide_title": "Service Accounts",
+    "slide_content": [
+      "Assign permissions to VMs",
+      "Interact without human intervention",
+      "VMs access other cloud services"
+    ],
+    "speaker_notes": "Service accounts allow assigning specific permissions to a virtual machine, enabling it to interact with other cloud services without human intervention. This eliminates the need for manual granting of access for each program run."
+  },
+  {
+    "slide_title": "Service Account Example",
+    "slide_content": [
+      "Authenticate VM to Cloud Storage",
+      "Create a service account",
+      "Prevent Internet Access"
+    ],
+    "speaker_notes": "This example demonstrates creating a service account to authenticate a VM to Cloud Storage. This prevents unauthorized internet access to the data, ensuring only the specific virtual machine can access it."
+  },
+  {
+    "slide_title": "Service Account Details",
+    "slide_content": [
+      "Identified with email address",
+      "Use cryptographic keys",
+      "Granted Compute Engine's Instance Admin role"
+    ],
+    "speaker_notes": "Service accounts are named with an email address but use cryptographic keys instead of passwords to access resources. Granting a service account Compute Engine\u2019s Instance Admin role allows an application running in a VM to create, modify, and delete other VMs."
+  },
+  {
+    "slide_title": "Service Accounts Managed",
+    "slide_content": [
+      "Service accounts managed by IAM",
+      "Alice manages Google accounts",
+      "Bob views list of service accounts"
+    ],
+    "speaker_notes": "Service accounts need to be managed like any other resource. IAM policies can be attached to service accounts, allowing administrators to control who can act as service accounts. For example, Alice can manage which accounts can act as service accounts, while Bob can only view the list."
+  },
+  {
+    "slide_title": "Cloud Identity",
+    "slide_content": [
+      "Google Cloud Resource Hierarchy",
+      "Identity and Access Management (IAM)",
+      "IAM roles, Service accounts",
+      "Cloud Identity"
+    ],
+    "speaker_notes": "This slide serves as a transition to discussing Cloud Identity, highlighting its relevance within the broader context of Google Cloud's resource hierarchy and access management features."
+  },
+  {
+    "slide_title": "Cloud Identity Overview",
+    "slide_content": [
+      "Manage team and organization access",
+      "Common to log in with Gmail",
+      "Centralized identity management"
+    ],
+    "speaker_notes": "Cloud Identity manages team and organization access. It addresses challenges with using Gmail accounts and Google Groups for collaboration, which lack centralized identity management and make it difficult to remove access when someone leaves."
+  },
+  {
+    "slide_title": "Cloud Identity Policies",
+    "slide_content": [
+      "Define user and group policies",
+      "Manage users in Google Admin console"
+    ],
+    "speaker_notes": "Cloud Identity enables organizations to define policies and manage users and groups using the Google Admin console, providing a centralized way to control access to cloud resources."
+  },
+  {
+    "slide_title": "Cloud Identity Benefits",
+    "slide_content": [
+      "Integrate existing systems",
+      "Disable/remove users easily",
+      "Available in free and premium editions"
+    ],
+    "speaker_notes": "Cloud Identity allows admins to log in and manage resources using existing Active Directory or LDAP credentials. Admins can also use the Google Admin console to disable user accounts and remove them from groups when they leave the organization. Cloud Identity is available in free and premium editions."
+  },
+  {
+    "slide_title": "Interact with Cloud",
+    "slide_content": [
+      "Google Cloud Resource Hierarchy",
+      "Identity and Access Management (IAM)",
+      "IAM roles, Service accounts",
+      "Cloud Identity"
+    ],
+    "speaker_notes": "This slide serves as a transition to discussing the different ways to interact with Google Cloud, highlighting the integration of these interaction methods with the resource hierarchy and security features."
+  },
+  {
+    "slide_title": "Four Access Methods",
+    "slide_content": [
+      "Google Cloud Console",
+      "Google Cloud SDK",
+      "APIs",
+      "Google Cloud App"
+    ],
+    "speaker_notes": "This slide outlines the four primary ways to access and interact with Google Cloud: the Google Cloud Console, the Google Cloud SDK and Cloud Shell, APIs, and the Google Cloud app."
+  },
+  {
+    "slide_title": "Cloud Console",
+    "slide_content": [
+      "Web-based interaction",
+      "Find resources, check health",
+      "Management control, set budgets",
+      "Find and connect via SSH"
+    ],
+    "speaker_notes": "The Google Cloud Console provides a simple web-based GUI to deploy, scale, and diagnose production issues. It allows users to easily find resources, check their health, manage them, and set budgets. It also offers a search facility and SSH access in the browser."
+  },
+  {
+    "slide_title": "Cloud SDK",
+    "slide_content": [
+      "Command-line tools",
+      "Manage hosted resources",
+      "Includes gcloud CLI and bq"
+    ],
+    "speaker_notes": "The Google Cloud SDK is a set of tools to manage resources and applications hosted on Google Cloud. It includes the gcloud CLI for Google Cloud products and services and bq, a command-line tool for BigQuery."
+  },
+  {
+    "slide_title": "Cloud Shell",
+    "slide_content": [
+      "Browser-based command line access",
+      "Debian-based VM",
+      "Persistent 5-GB home directory",
+      "SDK always installed/updated"
+    ],
+    "speaker_notes": "Cloud Shell provides command-line access to cloud resources directly from a browser. It's a Debian-based virtual machine with a persistent 5-GB home directory. The Google Cloud SDK gcloud command and other utilities are always installed, available, up to date, and fully authenticated."
+  },
+  {
+    "slide_title": "Google Cloud APIs",
+    "slide_content": [
+      "APIs allow code control",
+      "Google APIs Explorer",
+      "Cloud Client & Google API Client libraries",
+      "Multiple languages"
+    ],
+    "speaker_notes": "Google Cloud services offer APIs to allow code to control them. The Google APIs Explorer shows available APIs and versions. Google provides Cloud Client and Google API Client libraries in various languages to simplify calling Google Cloud from code."
+  },
+  {
+    "slide_title": "Google Cloud App",
+    "slide_content": [
+      "Manage resources",
+      "Billing information & alerts",
+      "Customizable graphs",
+      "Alerts and incident management"
+    ],
+    "speaker_notes": "The Google Cloud app allows starting, stopping, and using SSH to connect to Compute Engine instances, viewing logs, stopping and starting Cloud SQL instances, and administering App Engine applications. It also provides billing information, customizable graphs, and alerts for incident management."
+  },
+  {
+    "slide_title": "Module Quiz",
+    "slide_content": [],
+    "speaker_notes": "This is a transition slide indicating the start of a quiz to test the audience's understanding of the module's content."
+  },
+  {
+    "slide_title": "Quiz Question 1",
+    "slide_content": [],
+    "speaker_notes": "This slide presents the first quiz question to the audience, prompting them to choose the correct completion: Services and APIs are enabled on a per-__________ basis."
+  },
+  {
+    "slide_title": "Quiz Question 1",
+    "slide_content": [],
+    "speaker_notes": "This slide reiterates the first quiz question, ensuring the audience has ample time to consider the options and prepare their answer."
+  },
+  {
+    "slide_title": "Quiz Answer 1",
+    "slide_content": [],
+    "speaker_notes": "This slide provides the answer to the first quiz question, confirming the correct response as 'Project' and providing feedback for both the correct and incorrect options."
+  },
+  {
+    "slide_title": "Quiz Question 2",
+    "slide_content": [],
+    "speaker_notes": "This slide introduces the second quiz question, asking the audience to order the IAM role types from broadest to finest-grained."
+  },
+  {
+    "slide_title": "Quiz Question 2",
+    "slide_content": [],
+    "speaker_notes": "This slide repeats the second quiz question, allowing the audience to further contemplate the options and solidify their understanding."
+  },
+  {
+    "slide_title": "Quiz Answer 2",
+    "slide_content": [],
+    "speaker_notes": "This slide provides the answer to the second quiz question, revealing the correct order as 'Basic roles, predefined roles, custom roles' and offering feedback for each option."
+  },
+  {
+    "slide_title": "Quiz Question 3",
+    "slide_content": [],
+    "speaker_notes": "This slide presents the third quiz question, probing the audience's knowledge of which value is globally unique, permanent, unchangeable, but modifiable during creation."
+  },
+  {
+    "slide_title": "Quiz Question 3",
+    "slide_content": [],
+    "speaker_notes": "This slide restates the third quiz question, ensuring the audience has adequate time to analyze the options and formulate their answer."
+  },
+  {
+    "slide_title": "Quiz Answer 3",
+    "slide_content": [],
+    "speaker_notes": "This slide provides the solution to the third quiz question, identifying 'The project ID' as the correct answer and offering feedback to reinforce understanding."
+  },
+  {
+    "slide_title": "Lab Intro",
+    "slide_content": [
+      "Cloud Marketplace deployment",
+      "Deploy LAMP stack easily",
+      "Bitnami LAMP Stack"
+    ],
+    "speaker_notes": "This slide introduces a lab exercise focused on using Cloud Marketplace to deploy a LAMP stack on a Compute Engine instance. It mentions the Bitnami LAMP Stack as a complete web development environment that can be launched with one click."
+  }
+]

@@ -1,0 +1,101 @@
+[
+  {
+    "slide_title": "Resources and Access in the Cloud",
+    "slide_content": [
+      "This section covers how resources are organized in Google Cloud.",
+      "We'll explore how access to resources is shared.",
+      "We'll also look at different ways to interact with Google Cloud."
+    ],
+    "speaker_notes": "Now that you've had a chance to explore what cloud computing is, the pricing structure and billing practices available with Google Cloud, and the ways that Google strives to make the platform secure and environmentally friendly, let\u2019s now work to understand the functional structure of Google Cloud. In this section of the course, we\u2019ll see how resources get organized with projects, and how access to those resources gets shared with the right part of a workforce through a tool called Identity and Access Management, or IAM. We\u2019ll also look into the different ways in which you can interact with Google Cloud, including our web user interface, command-line interface, and our mobile apps."
+  },
+  {
+    "slide_title": "Folders Group Projects",
+    "slide_content": [
+      "Folders allow you to group resources on a per-department basis.",
+      "You can use folders to group projects under an organization in a hierarchy.",
+      "Folders give teams the ability to delegate administrative rights."
+    ],
+    "speaker_notes": "You can use folders to group projects under an organization in a hierarchy. For example, your organization might contain multiple departments, each with its own set of Google Cloud resources. Folders allow you to group these resources on a per-department basis. Folders give teams the ability to delegate administrative rights so that they can work independently."
+  },
+  {
+    "slide_title": "Resources and Access in the Cloud",
+    "slide_content": [
+      "Google Cloud resource hierarchy",
+      "Identity and Access Management (IAM)",
+      "IAM roles",
+      "Service accounts",
+      "Cloud Identity",
+      "Interacting with Google Cloud"
+    ],
+    "speaker_notes": "We will be covering the following topics in this module: Google Cloud Resource Hierarchy, Identity and Access Management, IAM Roles, Service Accounts, Cloud Identity, and Interacting with Google Cloud."
+  },
+  {
+    "slide_title": "Resources and Access in the Cloud",
+    "slide_content": [
+      "Google Cloud resource hierarchy",
+      "Identity and Access Management (IAM)",
+      "IAM roles",
+      "Service accounts",
+      "Cloud Identity",
+      "Interacting with Google Cloud"
+    ],
+    "speaker_notes": "We will be covering the following topics in this module: Google Cloud Resource Hierarchy, Identity and Access Management, IAM Roles, Service Accounts, Cloud Identity, and Interacting with Google Cloud."
+  },
+  {
+    "slide_title": "Resources are hierarchical",
+    "slide_content": [
+      "Resources are at the bottom level and represent virtual machines and Cloud Storage buckets.",
+      "Projects organize resources and sit on the second level.",
+      "Folders organize projects and sit at the third level.",
+      "The Organization node encompasses all projects, folders, and resources and is at the top level."
+    ],
+    "speaker_notes": "This hierarchy is made up of four levels, and starting from the bottom up they are: resources, projects, folders, and an organization node. At the \ufb01rst level are resources. These represent virtual machines, Cloud Storage buckets, Virtual Private Networks (VPCs), tables in BigQuery, or anything else in Google Cloud. Resources get organized into projects, which sit on the second level. Projects can be organized into folders, or even subfolders. These sit at the third level. And then at the top level is an organization node, which encompasses all the projects, folders, and resources in your organization."
+  },
+  {
+    "slide_title": "Resource Hierarchy Determines Policies",
+    "slide_content": [
+      "Policies can be defined at the project, folder, and organization node levels.",
+      "Some Google Cloud services allow policies to be applied to individual resources, too.",
+      "Policies are inherited downward. If applied to a folder, it applies to all projects within."
+    ],
+    "speaker_notes": "It\u2019s important to understand this resource hierarchy, as it directly relates to how policies are managed and applied when using Google Cloud."
+  },
+  {
+    "slide_title": "Projects are the basis for using Cloud services",
+    "slide_content": [
+      "Projects are separate entities under the Organization node",
+      "Projects hold resources, each of which belongs to just one Project",
+      "Projects can have different owners and users",
+      "Projects are billed separately"
+    ],
+    "speaker_notes": "Projects are the basis for enabling and using Google Cloud services, like managing APIs, enabling billing, adding and removing collaborators, and enabling other Google services. Each project is a separate compartment."
+  },
+  {
+    "slide_title": "Project attributes vary in uniqueness and immutability",
+    "slide_content": [
+      "Project ID: Globally unique, assigned by Google Cloud but mutable during creation, immutable after creation.",
+      "Project Name: Need not be unique, chosen by you, mutable.",
+      "Project Number: Globally unique, assigned by Google Cloud, immutable."
+    ],
+    "speaker_notes": "Each Google Cloud project has three identifying attributes: a project ID, a project name, and a project number. The project ID is immutable after creation. Project names are user-created and mutable. Project numbers are Google-generated and mainly used internally."
+  },
+  {
+    "slide_title": "Resource Manager manages projects",
+    "slide_content": [
+      "Gather a list of projects",
+      "Create new projects",
+      "Update existing projects",
+      "Delete projects"
+    ],
+    "speaker_notes": "The Resource Manager tool is an API that can gather a list of all the projects associated with an account, create new projects, update existing projects, and delete projects. It can even recover projects that were previously deleted and can be accessed through the RPC API and the REST API."
+  },
+  {
+    "slide_title": "Folders can contain subfolders and projects",
+    "slide_content": [
+      "The resources inherit policies and permissions assigned to folders",
+      "Folders let you assign policies to resources at a level of granularity you choose.",
+      "A folder can contain projects, other folders, or a combination of both."
+    ],
+    "speaker_notes": "Folders let you assign policies to resources at a level of granularity you choose. The projects and subfolders in a folder contain resources that inherit policies and permissions assigned to that folder."
+  }
+]

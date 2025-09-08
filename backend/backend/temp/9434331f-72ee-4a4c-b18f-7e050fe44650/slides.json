@@ -1,0 +1,481 @@
+[
+  {
+    "slide_title": "Introducing Google Cloud",
+    "slide_content": [
+      "Overview of cloud computing",
+      "IaaS and PaaS",
+      "Google Cloud network",
+      "Environmental impact",
+      "Security",
+      "Open APIs and open source",
+      "Pricing and billing"
+    ],
+    "speaker_notes": "This module introduces Google Cloud. It covers cloud computing basics. It will provide an overview of Infrastructure-as-a-Service (IaaS) and Platform-as-a-Service (PaaS). Further topics include the Google Cloud network, environmental impact, security measures, open APIs and open source initiatives, and pricing and billing models."
+  },
+  {
+    "slide_title": "What is Cloud?",
+    "slide_content": [
+      "US National Institute definition",
+      "Term cloud computing: what is it?"
+    ],
+    "speaker_notes": "The cloud is a hot topic these days. The US National Institute of Standards and Technology created the term cloud computing, although, there is nothing US-specific about it."
+  },
+  {
+    "slide_title": "Cloud Computing Traits",
+    "slide_content": [
+      "On-demand, self-service",
+      "Access over the internet",
+      "Provider allocates resources",
+      "Resources are elastic",
+      "Pay only for what you use"
+    ],
+    "speaker_notes": "Cloud computing is a way of using IT that has five equally important traits. Customers get computing resources that are on-demand and self-service. Customers get access to those resources over the internet, from anywhere. The provider allocates resources to users out of that pool. The resources are elastic, and customers pay only for what they use, or reserve as they go."
+  },
+  {
+    "slide_title": "On-Demand Resources",
+    "slide_content": [
+      "Customers get computing resources",
+      "On-demand and self-service"
+    ],
+    "speaker_notes": "First, customers get computing resources that are on-demand and self-service. Through a web interface, users get the processing power, storage, and network they need with no need for human intervention."
+  },
+  {
+    "slide_title": "Access over Internet",
+    "slide_content": [
+      "Customers get access to resources",
+      "Over the internet, from anywhere"
+    ],
+    "speaker_notes": "Second, customers get access to those resources over the internet, from anywhere they have a connection."
+  },
+  {
+    "slide_title": "Provider Allocates Resources",
+    "slide_content": [
+      "Provider allocates to users",
+      "Out of that pool"
+    ],
+    "speaker_notes": "Third, the provider of those resources has a big pool of them, and allocates them to users out of that pool. That allows the provider to buy in bulk and pass the savings on to the customers. Customers don't have to know or care about the exact physical location of those resources."
+  },
+  {
+    "slide_title": "Resources Are Elastic",
+    "slide_content": [
+      "Resources are flexible",
+      "Customers can scale resources"
+    ],
+    "speaker_notes": "Fourth, the resources are elastic\u2013which means they\u2019re flexible, so customers can be. If they need more resources they can get more, and quickly. If they need less, they can scale back."
+  },
+  {
+    "slide_title": "Pay-As-You-Go Model",
+    "slide_content": [
+      "Pay only for what you use",
+      "Or reserve as you go"
+    ],
+    "speaker_notes": "And finally, the customers pay only for what they use, or reserve as they go. If they stop using resources, they stop paying. That's it. That's the definition of cloud."
+  },
+  {
+    "slide_title": "Cloud History: Colocation",
+    "slide_content": [
+      "First Wave: Rent",
+      "Colocation provided efficiency"
+    ],
+    "speaker_notes": "The trend towards cloud computing started with a first wave with something called colocation. Colocation gave users the financial efficiency of renting physical space, instead of investing in data center real estate."
+  },
+  {
+    "slide_title": "Cloud History: Virtualization",
+    "slide_content": [
+      "Second Wave",
+      "Virtualized data centers",
+      "Components are virtual devices"
+    ],
+    "speaker_notes": "Virtualized data centers of today, which is the second wave, share similarities with the private data centers and colocation facilities of decades past. The components of virtualized data centers match the physical building blocks of hosted computing\u2014servers, CPUs, disks, load balancers, and so on\u2014but now they\u2019re virtual devices."
+  },
+  {
+    "slide_title": "User-Controlled Environment",
+    "slide_content": [
+      "User-controlled environment",
+      "Enterprises maintained infrastructure"
+    ],
+    "speaker_notes": "With virtualization, enterprises still maintained the infrastructure; it\u2019s still a user-controlled and user-configured environment."
+  },
+  {
+    "slide_title": "Cloud History: Containerization",
+    "slide_content": [
+      "Third Wave",
+      "Container-based architecture",
+      "Automated services and scalable data"
+    ],
+    "speaker_notes": "Several years ago, Google realized that its business couldn\u2019t move fast enough within the confines of the virtualization model. So Google switched to a container-based architecture\u2014a fully automated, elastic third-wave cloud that consists of a combination of automated services and scalable data. Services automatically provision and configure the infrastructure used to run applications."
+  },
+  {
+    "slide_title": "Google's Third-Wave Cloud",
+    "slide_content": [
+      "Available to Google customers",
+      "Every company will be data company"
+    ],
+    "speaker_notes": "Today, Google Cloud makes this third-wave cloud available to Google customers. Google believes that, in the future, every company\u2014regardless of size or industry\u2014will differentiate itself from its competitors through technology. Increasingly, that technology will be in the form of software. Great software is based on high-quality data. This means that every company is, or will eventually become, a data company."
+  },
+  {
+    "slide_title": "Cloud Service Offerings",
+    "slide_content": [
+      "IaaS - Infrastructure as a service",
+      "PaaS - Platform as a service"
+    ],
+    "speaker_notes": "This move to virtualized data centers introduced customers to two new types of offerings: infrastructure as a service, commonly referred to as IaaS, and platform as a service, or PaaS."
+  },
+  {
+    "slide_title": "IaaS Overview",
+    "slide_content": [
+      "Infrastructure as a Service (IaaS)",
+      "Delivers on-demand infrastructure",
+      "Raw compute, storage, network"
+    ],
+    "speaker_notes": "IaaS delivers on-demand infrastructure resources via the cloud, such as raw compute, storage, and network capabilities, organized virtually into resources that are similar to physical data centers. Compute Engine is an example of a Google Cloud IaaS service."
+  },
+  {
+    "slide_title": "PaaS Overview",
+    "slide_content": [
+      "Platform as a Service (PaaS)",
+      "Delivers/manages hardware and software",
+      "Bind code to infrastructure needs"
+    ],
+    "speaker_notes": "PaaS delivers and manages all the hardware and software through the cloud. PaaS offerings bind code to libraries that provide access to the infrastructure application needs. This allows more resources to be focused on application logic. App Engine is an example of a Google Cloud PaaS service."
+  },
+  {
+    "slide_title": "IaaS vs PaaS",
+    "slide_content": [
+      "IaaS: Pay for what they allocate",
+      "PaaS: Pay for what they use"
+    ],
+    "speaker_notes": "In the IaaS model, customers pay for the resources they allocate ahead of time; in the PaaS model, customers pay for the resources they actually use."
+  },
+  {
+    "slide_title": "Evolution of Cloud",
+    "slide_content": [
+      "Managed resources",
+      "Managed services",
+      "Deliver products/services quickly",
+      "More reliably"
+    ],
+    "speaker_notes": "As cloud computing has evolved, the momentum has shifted toward managed infrastructure and managed services. Leveraging managed resources and services allows companies to concentrate more on their business goals and spend less time and money on creating and maintaining their technical infrastructure. It allows companies to deliver products and services to their customers more quickly and reliably. Serverless computing allows developers to concentrate on their code, rather than on server configuration, by eliminating the need for any infrastructure management."
+  },
+  {
+    "slide_title": "Software as a Service",
+    "slide_content": [
+      "Entire application stack",
+      "Run in cloud as service",
+      "Consumed over internet"
+    ],
+    "speaker_notes": "SaaS provides the entire application stack, delivering an entire cloud-based application that customers can access and use. SaaS applications are not installed on your local computer - they run in the cloud as a service and are consumed directly over the internet by end users. Google's popular applications like Gmail, Docs, and Drive, collectively known as Google Workspace, are all classified as SaaS."
+  },
+  {
+    "slide_title": "Google's Network",
+    "slide_content": [
+      "Google's investment: Billions of dollars",
+      "Largest network of its kind"
+    ],
+    "speaker_notes": "Google\u2019s network is the largest network of its kind, and Google has invested billions of dollars over the years to build it."
+  },
+  {
+    "slide_title": "Designed for Throughput",
+    "slide_content": [
+      "High throughput",
+      "Low latencies",
+      "100+ content caching nodes"
+    ],
+    "speaker_notes": "Google\u2019s global network is designed to give customers the highest possible throughput and lowest possible latencies for their applications by leveraging more than 100 content caching nodes worldwide\u2013which are locations where high demand content is cached for quicker access\u2013to respond to user requests from the location that will provide the quickest response time."
+  },
+  {
+    "slide_title": "Infrastructure Locations",
+    "slide_content": [
+      "North America",
+      "South America",
+      "Europe, Asia, Australia",
+      "Middle East, Africa"
+    ],
+    "speaker_notes": "Google Cloud\u2019s infrastructure is based in seven major geographic locations: North America, South America, Europe, Africa, the Middle East, Asia, and Australia. Having multiple service locations is important because choosing where to locate applications affects qualities like availability, durability, and latency, the latter of which measures the time a packet of information takes to travel from its source to its destination."
+  },
+  {
+    "slide_title": "Regions and Zones",
+    "slide_content": [
+      "Location",
+      "Regions",
+      "Zones",
+      "Geographic locations"
+    ],
+    "speaker_notes": "Each of these locations are divided into a number of different regions and zones."
+  },
+  {
+    "slide_title": "Regions Contain Zones",
+    "slide_content": [
+      "Region",
+      "Zones",
+      "London - europe-west2"
+    ],
+    "speaker_notes": "Regions represent independent geographic areas, and are composed of zones. For example, London, or europe-west2, is a region that currently comprises three different zones."
+  },
+  {
+    "slide_title": "Resource Redundancy",
+    "slide_content": [
+      "Zones",
+      "Resources deployed in zones",
+      "Virtual Machine example"
+    ],
+    "speaker_notes": "A zone is an area where Google Cloud resources get deployed. For example, let\u2019s say you launch a virtual machine using Compute Engine\u2013more about Compute Engine in a bit\u2013it will run in the zone that you specify to ensure resource redundancy."
+  },
+  {
+    "slide_title": "Run Resources in Regions",
+    "slide_content": [
+      "Resources run in different regions",
+      "Closer to users worldwide",
+      "Protection against natural disaster"
+    ],
+    "speaker_notes": "You can run resources in different regions. This is useful for bringing applications closer to users around the world, and also for protection in case there are issues with an entire region, say, due to a natural disaster."
+  },
+  {
+    "slide_title": "Multi-Region Services",
+    "slide_content": [
+      "Resources in multiple regions",
+      "Example: Spanner",
+      "Low latency data reads"
+    ],
+    "speaker_notes": "Some of Google Cloud\u2019s services support placing resources in what we call a multi-region. For example, Spanner multi-region configurations allow you to replicate the database's data not just in multiple zones, but in multiple zones across multiple regions, as defined by the instance configuration. These additional replicas enable you to read data with low latency from multiple locations close to or within the regions in the configuration, like The Netherlands and Belgium."
+  },
+  {
+    "slide_title": "Zones and Regions",
+    "slide_content": [
+      "Increasing zones and regions",
+      "cloud.google.com/about/locations"
+    ],
+    "speaker_notes": "The number of zones and regions Google Cloud supports is increasing all the time. The most up to date info can be found at cloud.google.com/about/locations."
+  },
+  {
+    "slide_title": "Data Center Energy",
+    "slide_content": [
+      "2% of world's electricity",
+      "Work for efficient data centers"
+    ],
+    "speaker_notes": "Together, all existing data centers use roughly 2% of the world\u2019s electricity. So, Google works to make data centers run as efficiently as possible."
+  },
+  {
+    "slide_title": "Improving Efficiency",
+    "slide_content": [
+      "Improve efficiency/reduce waste",
+      "ISO 14001 certification achieved"
+    ],
+    "speaker_notes": "Google is trying to do the right things for the planet. Google's data centers were the first to achieve ISO 14001 certification, which is a standard that maps out a framework for improving resource efficiency and reducing waste."
+  },
+  {
+    "slide_title": "Hamina, Finland",
+    "slide_content": [
+      "Most advanced/efficient",
+      "Cooling system uses sea water"
+    ],
+    "speaker_notes": "This is Google\u2019s data center in Hamina, Finland. The facility is one of the most advanced and efficient data centers in the Google fleet. Its cooling system, which uses sea water from the Bay of Finland, reduces energy use and is the first of its kind anywhere in the world."
+  },
+  {
+    "slide_title": "Sustainability Commitment",
+    "slide_content": [
+      "Carbon neutral first",
+      "100% renewable energy",
+      "Carbon free by 2030"
+    ],
+    "speaker_notes": "In our founding decade, Google became the first major company to be carbon neutral. In our second decade, we were the first company to achieve 100% renewable energy. By 2030, we aim to be the first major company to operate carbon free."
+  },
+  {
+    "slide_title": "Security in Mind",
+    "slide_content": [
+      "Designed with security in mind",
+      "Nine services with billion+ users"
+    ],
+    "speaker_notes": "Because Google has nine services with more than a billion users, you can bet security is always on the minds of Google's employees. Design for security is prevalent, throughout the infrastructure, that Google Cloud and Google services run-on."
+  },
+  {
+    "slide_title": "Hardware Infrastructure",
+    "slide_content": [
+      "Hardware design and provenance",
+      "Secure boot stack",
+      "Premises security"
+    ],
+    "speaker_notes": "Hardware design and provenance: Both the server boards and the networking equipment in Google data centers are custom designed by Google. Google also designs custom chips, including a hardware security chip that's currently being deployed on both servers and peripherals. Secure boot stack: Google server machines use a variety of technologies to ensure that they are booting the correct software stack, such as cryptographic signatures over the BIOS, bootloader, kernel, and base operating system image. Premises security: Google designs and builds its own data centers, which incorporate multiple layers of physical security protections."
+  },
+  {
+    "slide_title": "Hardware Design",
+    "slide_content": [
+      "Server boards, chips designed by Google",
+      "Booting the correct software stack",
+      "Physical security protections"
+    ],
+    "speaker_notes": "Hardware design and provenance: Both the server boards and the networking equipment in Google data centers are custom designed by Google. Google also designs custom chips, including a hardware security chip that's currently being deployed on both servers and peripherals. Secure boot stack: Google server machines use a variety of technologies to ensure that they are booting the correct software stack, such as cryptographic signatures over the BIOS, bootloader, kernel, and base operating system image. Premises security: Google designs and builds its own data centers, which incorporate multiple layers of physical security protections. Access to these data centers is limited to only a very small fraction of Google employees. Google additionally hosts some servers in third-party data centers, where we ensure that there are Google-controlled physical security measures on top of the security layers provided by the data center operator."
+  },
+  {
+    "slide_title": "Service Deployment",
+    "slide_content": [
+      "Encryption of inter-service communication",
+      "Using remote procedure calls (RPCs)"
+    ],
+    "speaker_notes": "Encryption of inter-service communication: Google\u2019s infrastructure provides cryptographic privacy and integrity for remote procedure call (\u201cRPC\u201d) data on the network. Google\u2019s services communicate with each other using RPC calls. The infrastructure automatically encrypts all infrastructure RPC traffic which goes between data centers. Google has started to deploy hardware cryptographic accelerators that will allow it to extend this default encryption to all infrastructure RPC traffic inside Google data centers."
+  },
+  {
+    "slide_title": "User Identity",
+    "slide_content": [
+      "User identity",
+      "Challenging users for information",
+      "Using secondary factors"
+    ],
+    "speaker_notes": "Google\u2019s central identity service, which usually manifests to end users as the Google login page, goes beyond asking for a simple username and password. The service also intelligently challenges users for additional information based on risk factors such as whether they have logged in from the same device or a similar location in the past. Users also have the option of employing secondary factors when signing in, including devices based on the Universal 2nd Factor (U2F) open standard."
+  },
+  {
+    "slide_title": "Storage Services",
+    "slide_content": [
+      "Encryption at rest",
+      "Centrally managed keys",
+      "Hardware encryption support"
+    ],
+    "speaker_notes": "Encryption at rest: Most applications at Google access physical storage (in other words, \u201cfile storage\u201d) indirectly via storage services, and encryption (using centrally managed keys) is applied at the  layer of these storage services. Google also enables hardware encryption support in hard drives and SSDs."
+  },
+  {
+    "slide_title": "Internet Communication",
+    "slide_content": [
+      "Google Front End (GFE)",
+      "Denial of Service (DoS) protection"
+    ],
+    "speaker_notes": "Google Front End (\u201cGFE\u201d): Google services that want to make themselves available on the Internet register themselves with an infrastructure service called the Google Front End, which ensures that all TLS connections are ended using a public-private key pair and an X.509 certificate from a Certified Authority (CA) as well as following best practices such as supporting perfect forward secrecy. The GFE additionally applies protections against Denial of Service attacks. Denial of Service (\u201cDoS\u201d) protection: The sheer scale of its infrastructure enables Google to simply absorb many DoS attacks. Google also has multi-tier, multi-layer DoS protections that further reduce the risk of any DoS impact on a service running behind a GFE."
+  },
+  {
+    "slide_title": "Operational Security",
+    "slide_content": [
+      "Intrusion detection",
+      "Reducing insider risk",
+      "Software development practices"
+    ],
+    "speaker_notes": "Intrusion detection: Rules and machine intelligence give Google\u2019s operational security teams warnings of possible incidents. Google conducts Red Team exercises to measure and improve the effectiveness of its detection and response mechanisms. Reducing insider risk: Google aggressively limits and actively monitors the activities of employees who have been granted administrative access to the infrastructure. Employee U2F use: To guard against phishing attacks against Google employees, employee accounts require use of U2F-compatible Security Keys. Software development practices: Google employs central source control and requires two-party review of new code."
+  },
+  {
+    "slide_title": "More on Security",
+    "slide_content": [
+      "Learn more about security",
+      "cloud.google.com/security/security-design"
+    ],
+    "speaker_notes": "You can learn more about Google\u2019s technical-infrastructure security at cloud.google.com/security/security-design."
+  },
+  {
+    "slide_title": "Open Source Friendly",
+    "slide_content": [
+      "Avoid data locked into vendor",
+      "Ability to run applications elsewhere",
+      "Publishes key tech elements"
+    ],
+    "speaker_notes": "Some people are afraid to bring their workloads to the cloud because they're afraid they'll get locked into a particular vendor. But if, for whatever reason, a customer decides that Google is no longer the best provider for their needs, we give customers the ability to run their applications elsewhere. Google publishes key elements of technology using open source licenses to create ecosystems that provide customers with options other than Google."
+  },
+  {
+    "slide_title": "Open-Source TensorFlow",
+    "slide_content": [
+      "Open source library",
+      "For machine learning",
+      "Works with Google Cloud"
+    ],
+    "speaker_notes": "For example, TensorFlow, an open source software library for machine learning developed inside Google, is at the heart of a strong open source ecosystem."
+  },
+  {
+    "slide_title": "Interoperability",
+    "slide_content": [
+      "Mix and match microservices",
+      "Running across different clouds",
+      "Kubernetes, GKE, Observability"
+    ],
+    "speaker_notes": "Google provides interoperability at multiple layers of the stack. Kubernetes and Google Kubernetes Engine give customers the ability to mix and match microservices running across different clouds. Google Cloud Observability lets customers monitor workloads across multiple cloud providers."
+  },
+  {
+    "slide_title": "Per-Second Billing",
+    "slide_content": [
+      "Compute products billed per-second",
+      "Compute Engine",
+      "Kubernetes Engine"
+    ],
+    "speaker_notes": "Google was the first major cloud provider to deliver per-second billing for its Infrastructure-as-a-Service compute offering, Compute Engine. We\u2019ll explore these products and services later in this course, but per-second billing is offered for users of Compute Engine, Google Kubernetes Engine (container infrastructure as a service), Dataproc (which is the equivalent of the big data system Hadoop, but operating as a service), and App Engine flexible environment VMs (a platform as a service)."
+  },
+  {
+    "slide_title": "Billing Flexibility",
+    "slide_content": [
+      "Sustained-use discounts",
+      "Custom virtual machine types"
+    ],
+    "speaker_notes": "Compute Engine offers automatically applied sustained-use discounts, which are automatic discounts that you get for running a virtual-machine instance for a significant portion of the billing month. Custom virtual machine types allow Compute Engine virtual machines to be fine-tuned with optimal amounts of vCPU and memory for their applications, so that you can tailor your pricing for your workloads."
+  },
+  {
+    "slide_title": "Pricing Calculator",
+    "slide_content": [
+      "Estimate costs",
+      "cloud.google.com/products/calculator"
+    ],
+    "speaker_notes": "Our online pricing calculator can help estimate your costs. Visit cloud.google.com/products/calculator to try it out."
+  },
+  {
+    "slide_title": "Budget and Monitor",
+    "slide_content": [
+      "Billing tools help",
+      "Budgets, Alerts, Reports",
+      "Quotas"
+    ],
+    "speaker_notes": "We provide a few tools to help. You can define budgets at the billing account level or at the project level. A budget can be a fixed limit, or it can be tied to another metric - for example, a percentage of the previous month\u2019s spend. To be notified when costs approach your budget limit, you can create an alert. Reports is a visual tool in the Google Cloud console that allows you to monitor expenditure based on a project or services. Finally, Google Cloud also implements quotas, which are designed to prevent the over-consumption of resources because of an error or a malicious attack, protecting both account owners and the Google Cloud community as a whole."
+  },
+  {
+    "slide_title": "Quotas at Project",
+    "slide_content": [
+      "Quotas are allocated project-level",
+      "Allocation quota",
+      "Rate quota"
+    ],
+    "speaker_notes": "There are two types of quotas: rate quotas and allocation quotas. Both are applied at the project level. Rate quotas reset after a specific time. Allocation quotas govern the number of resources you can have in your projects. Although projects all start with the same quotas, you can change some of them by requesting an increase from Google Cloud Support."
+  },
+  {
+    "slide_title": "Module Quiz",
+    "slide_content": [],
+    "speaker_notes": ""
+  },
+  {
+    "slide_title": "Quiz Question 1",
+    "slide_content": [
+      "Benefit to Google Cloud Customer",
+      "Several zones within a region?"
+    ],
+    "speaker_notes": "Question: What is the primary benefit to a Google Cloud customer of using resources in several zones within a region?"
+  },
+  {
+    "slide_title": "Fault Tolerance",
+    "slide_content": [
+      "Improved fault tolerance"
+    ],
+    "speaker_notes": "Why might a Google Cloud customer use resources in several zones within a region? A: For improved fault tolerance. Feedback: Correct. As part of building a fault-tolerant application, you can spread your resources across multiple zones in a region."
+  },
+  {
+    "slide_title": "Quiz Question 2",
+    "slide_content": [
+      "Bind application code to libraries",
+      "Access to infrastructure?"
+    ],
+    "speaker_notes": "Question: What type of cloud computing service lets you bind your application code to libraries that give access to the infrastructure your application needs?"
+  },
+  {
+    "slide_title": "Platform as a Service",
+    "slide_content": [
+      "Platform as a Service"
+    ],
+    "speaker_notes": "What type of cloud computing service lets you bind your application code to libraries that give access to the infrastructure your application needs? D: Platform as a Service. Feedback: Correct!"
+  },
+  {
+    "slide_title": "Quiz Question 3",
+    "slide_content": [
+      "Resources in several regions",
+      "Customer use resources"
+    ],
+    "speaker_notes": "Question: Why might a Google Cloud customer use resources in several regions around the world?"
+  },
+  {
+    "slide_title": "Global Fault Tolerance",
+    "slide_content": [
+      "Bring apps closer to users",
+      "Improved fault tolerance"
+    ],
+    "speaker_notes": "Why might a Google Cloud customer use resources in several regions around the world? D: To bring their applications closer to users around the world, and for improved fault tolerance. Feedback: That is correct."
+  }
+]

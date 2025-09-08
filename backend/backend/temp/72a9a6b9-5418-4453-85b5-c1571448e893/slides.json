@@ -1,0 +1,56 @@
+[
+  {
+    "slide_title": "Emerging Markets ETFs",
+    "slide_content": [
+      "Investing in emerging markets",
+      "Rapid growth, high productivity levels",
+      "Increased middle-class interest",
+      "High volatility and liquidity"
+    ],
+    "speaker_notes": "Emerging markets ETFs focus on countries becoming developed markets. These include regions across Asia-Pacific and Latin America, such as Brazil, Chile, Mexico, China, and India. These economies are characterized by rapid growth, high productivity, expanding middle class, high volatility, and liquidity in local debt and equity markets. Investors find these ETFs attractive because emerging economies tend to grow faster than their developed counterparts, demonstrating significant growth over the last decade."
+  },
+  {
+    "slide_title": "ETFs: Market Exposure",
+    "slide_content": [
+      "Analyzed ETFs main market exposure:",
+      "- iShares MSCI Chile ETF (ECH)",
+      "- iShares MSCI Brazil ETF (EWZ)",
+      "- iShares Core S&P 500 ETF (IVV)",
+      "Classification strategy to predict trends"
+    ],
+    "speaker_notes": "The study focuses on three ETFs from BlackRock: iShares MSCI Chile ETF (ECH), iShares MSCI Brazil ETF (EWZ), and iShares Core S&P 500 ETF (IVV). These ETFs represent emerging and developed markets, allowing for a nuanced analysis of predictive features and model performance. The analysis includes exploring the sectoral distribution within each ETF to understand how different economic activities influence performance. A classification strategy is used to predict a qualitative variable based on the opening price of the ETFs."
+  },
+  {
+    "slide_title": "CRISP-DM Methodology",
+    "slide_content": [
+      "Six stages:",
+      "- Understanding the data",
+      "- Data preparation",
+      "- Model construction",
+      "- Model evaluation"
+    ],
+    "speaker_notes": "The study employs the CRISP-DM methodology, which includes six stages: understanding the data and the problem domain, data preparation, model construction, model evaluation, and presentation of results. Data preparation is a crucial stage involving cleaning, merging, scaling, and feature engineering to enhance data quality and improve the performance of machine learning algorithms. This stage converts inconsistent and incomplete real-world data into a readable format."
+  },
+  {
+    "slide_title": "Technical Indicators",
+    "slide_content": [
+      "Pandas Technical Analysis Library",
+      "- Customizable indicators",
+      "- Utility functions",
+      "- Candlestick patterns",
+      "Expanded feature set to 216"
+    ],
+    "speaker_notes": "The Pandas Technical Analysis Library (Pandas TA) is used to compute a comprehensive set of technical indicators. Pandas TA provides a versatile toolkit with customizable technical indicators, utility functions, and candlestick patterns. The feature set is expanded by 210 indicators from the six fundamental attributes sourced from Yahoo Finance, including Open, High, Low, Close, Adjusted Close, and Volume, resulting in a total of 216 daily features. This equips the analytical framework with a rich and diverse set of features, facilitating a nuanced exploration of market trends."
+  },
+  {
+    "slide_title": "Feature Selection",
+    "slide_content": [
+      "Statistical Measures:",
+      "- Low Variance",
+      "- Chi-Squared",
+      "- LASSO",
+      "- Tree-based Selection"
+    ],
+    "speaker_notes": "The study uses an approach based on exploratory analysis and reduction of the input space to improve the accuracy of multiclass classification in machine learning. This feature selection effectively reduces dimensionality by selecting the subset of features that provide more information and dropping redundant ones. Techniques for selecting relevant features include low variance, Chi-squared, Least Absolute Shrinkage and Selection Operator (LASSO), tree-based feature selection, Pearson\u2019s correlation, principal feature analysis, Mean Absolute Difference (MAD), and Dispersion Ratio (DR)."
+  }
+]
