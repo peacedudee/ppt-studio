@@ -25,7 +25,7 @@ app = FastAPI(title="PPT Studio API")
 # --- CORS Middleware Configuration ---
 origins = [
     "http://localhost:5173",
-    "http://localhost:3000",
+    "https://ppt-studio.web.app",
 ]
 
 app.add_middleware(
