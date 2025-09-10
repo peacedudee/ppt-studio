@@ -1,0 +1,92 @@
+name: Deploy to Google Cloud
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: asia-south1
+  REPO_NAME: ppt-studio-repo
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
+
+      - name: Build and Push Docker Image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-backend:${{ github.sha }}
+
+      - name: Deploy API Service
+        run: |
+          gcloud run deploy ppt-studio-api \
+            --image=${{ steps.build-image.outputs.digest }} \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --vpc-connector=vpc-connector \
+            --set-env-vars=REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port.string(port))' | sed 's/\t/:/')/0 \
+            --set-secrets=GOOGLE_API_KEY=gemini-api-key:latest \
+            --command="gunicorn","-w","4","-k","uvicorn.workers.UvicornWorker","app.main:app"
+      
+      - name: Deploy Worker Service
+        run: |
+          gcloud run deploy ppt-studio-worker \
+            --image=${{ steps.build-image.outputs.digest }} \
+            --region=${{ env.GCP_REGION }} \
+            --no-allow-unauthenticated \
+            --vpc-connector=vpc-connector \
+            --set-env-vars=REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port.string(port))' | sed 's/\t/:/')/0 \
+            --set-secrets=GOOGLE_API_KEY=gemini-api-key:latest \
+            --command="celery","-A","worker.celery_app.celery","worker","--loglevel=info"
+
+  deploy-frontend:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: ./frontend
+      
+      - name: Update API URL in Frontend Code
+        run: |
+          API_URL=$(gcloud run services describe ppt-studio-api --platform=managed --region=${{ env.GCP_REGION }} --format='value(status.url)')
+          sed -i "s|http://localhost:8000|${API_URL}|g" frontend/src/services/api.js
+      
+      - name: Build React App
+        run: npm run build
+        working-directory: ./frontend
+        
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          # --- THIS IS THE CHANGE ---
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}'
+          projectId: ${{ env.GCP_PROJECT_ID }}
