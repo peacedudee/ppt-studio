@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { generateSlidePlan, buildPresentation, getJobStatus, API_BASE_URL } from '../services/api';
 import SlideEditor from '../components/SlideEditor';
-import { Container, Title, Text, Button, Group, Loader, Alert, SimpleGrid, Stack, Stepper, Center, Card, Badge } from '@mantine/core';
+import { Container, Title, Text, Button, Group, Loader, Alert, SimpleGrid, Stack, Stepper, Center, Card } from '@mantine/core';
 import { IconCircleCheck, IconAlertCircle, IconFileTypePdf, IconPhoto, IconBrain, IconX } from '@tabler/icons-react';
 import { FileDropzone } from '../components/FileDropzone';
 import SortableImageList from '../components/SortableImageList';
@@ -33,9 +33,8 @@ export default function CreatorPage() {
             setSlidePlan(statusResult.result.slide_plan); 
             setStatus('review');
           } else {
-            const downloadResponse = await fetch(`${API_BASE_URL}/api/v1/creator/download/${planJobId}`);
-            const data = await downloadResponse.json();
-            setFinalUrl(data.download_url);
+            const downloadUrl = `${API_BASE_URL}/api/v1/creator/download/${planJobId}`;
+            setFinalUrl(downloadUrl);
             setStatus('complete');
           }
         } else if (statusResult.status === 'FAILURE') {
@@ -110,13 +109,14 @@ export default function CreatorPage() {
           
           <SimpleGrid cols={{ base: 1, md: 2 }} spacing="xl" mt="md">
             {slidePlan && slidePlan.map((slide, index) => {
-              const imagePath = `http://localhost:8000/temp/${planJobId}/${imageFiles[index]?.name}`;
+              const imageForSlide = imageFiles[index];
+              const imageUrl = imageForSlide ? URL.createObjectURL(imageForSlide) : null;
               return (
                 <SlideEditor 
                   key={index} 
                   slide={slide} 
                   index={index} 
-                  imageUrl={imagePath}
+                  imageUrl={imageUrl}
                   onUpdate={handlePlanChange} 
                 />
               );

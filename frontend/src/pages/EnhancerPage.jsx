@@ -15,6 +15,7 @@ export default function EnhancerPage() {
   const [jobResult, setJobResult] = useState(null);
   const [error, setError] = useState('');
 
+  // This effect polls for the result of the 'enhance' job
   useEffect(() => {
     if (status !== 'processing' || !jobId) return;
     
@@ -59,18 +60,8 @@ export default function EnhancerPage() {
 
   const handleDownload = async () => {
     if (!jobResult) return;
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`);
-      if (!response.ok) throw new Error('Download failed!');
-
-      const data = await response.json();
-      if (data.download_url) {
-        window.location.href = data.download_url; // Redirect to the secure GCS URL
-      }
-    } catch (err) {
-      setError(err.message);
-      setStatus('error');
-    }
+    // The API now returns a redirect, so we just point the browser to the download endpoint
+    window.location.href = `${API_BASE_URL}/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`;
   };
   
   const handleReset = () => {
@@ -87,6 +78,7 @@ export default function EnhancerPage() {
   const nextStep = () => setActiveStep((current) => (current < 3 ? current + 1 : current));
   const prevStep = () => setActiveStep((current) => (current > 0 ? current - 1 : current));
 
+  // --- Main UI Rendering ---
   if (status === 'processing') {
     return (
       <Container size="sm" mt="xl">
