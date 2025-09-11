@@ -9,10 +9,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy everything
 COPY . .
 
-# Copy entrypoint explicitly
-COPY worker_entrypoint.sh /app/worker_entrypoint.sh
-RUN chmod +x /app/worker_entrypoint.sh
+# Copy entrypoint
+COPY worker_entrypoint.sh .
+RUN chmod +x worker_entrypoint.sh
 
+# Cloud Run always sets PORT=8080 by default
 EXPOSE 8080
 
 CMD ["./worker_entrypoint.sh"]
