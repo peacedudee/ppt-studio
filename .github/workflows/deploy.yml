@@ -37,7 +37,6 @@ jobs:
         with:
           context: ./backend
           push: true
-          # Use a consistent, full image tag
           tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-backend:${{ github.sha }}
 
       - name: Deploy API Service
@@ -48,12 +47,12 @@ jobs:
             --region=${{ env.GCP_REGION }} \
             --allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port.string())' | sed 's/ /:/')/0" \
+            --set-env-vars="REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port)' | sed 's/\t/:/')/0" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --command="gunicorn" \
             --args="-w,4,-k,uvicorn.workers.UvicornWorker,--bind,0.0.0.0:8080,app.main:app"
       
-      - name: Store API URL
+      - name: Store API URL for Frontend Job
         run: echo "API_URL=$(gcloud run services describe ppt-studio-api --platform=managed --region=${{ env.GCP_REGION }} --format='value(status.url)')" >> $GITHUB_ENV
 
       - name: Deploy Worker Service
@@ -63,7 +62,7 @@ jobs:
             --region=${{ env.GCP_REGION }} \
             --no-allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port.string())' | sed 's/ /:/')/0" \
+            --set-env-vars="REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port)' | sed 's/\t/:/')/0" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --command="celery" \
             --args="-A,worker.celery_app.celery,worker,--loglevel=info"
@@ -72,6 +71,9 @@ jobs:
     name: Build and Deploy Frontend
     runs-on: ubuntu-latest
     needs: deploy-backend
+    environment: 
+        name: production
+        url: ${{ steps.deploy-firebase.outputs.hosting_url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -91,6 +93,7 @@ jobs:
         working-directory: ./frontend
         
       - name: Deploy to Firebase Hosting
+        id: deploy-firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
