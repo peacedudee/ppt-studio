@@ -1,5 +1,5 @@
 // The base URL of our FastAPI backend
-const API_BASE_URL = "https://ppt-studio-api-43q6ygpsma-el.a.run.app";
+export const API_BASE_URL = "https://ppt-studio-api-43q6ygpsma-el.a.run.app";
 
 /**
  * Uploads files and data to the PPT Enhancer endpoint.
@@ -102,3 +102,4 @@ export async function submitFeedback(feedbackData) {
 
   return response.json();
 }
+

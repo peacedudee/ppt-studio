@@ -33,7 +33,7 @@ export default function CreatorPage() {
             setSlidePlan(statusResult.result.slide_plan); 
             setStatus('review');
           } else {
-            const downloadUrl = `http://localhost:8000/api/v1/creator/download/${planJobId}`;
+            const downloadUrl = `${API_BASE_URL}/api/v1/creator/download/${planJobId}`;
             setFinalUrl(downloadUrl);
             setStatus('complete');
           }

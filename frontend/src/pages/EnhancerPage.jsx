@@ -60,7 +60,7 @@ export default function EnhancerPage() {
   const handleDownload = async () => {
     if (!jobResult) return;
     try {
-      const url = `http://localhost:8000/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`;
+      const url = `${API_BASE_URL}/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Download failed!');
       
