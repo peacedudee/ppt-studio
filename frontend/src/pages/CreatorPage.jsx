@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { generateSlidePlan, buildPresentation, getJobStatus } from '../services/api';
+import { generateSlidePlan, buildPresentation, getJobStatus,API_BASE_URL } from '../services/api';
 import SlideEditor from '../components/SlideEditor';
 import { Container, Title, Text, Button, Group, Loader, Alert, SimpleGrid, Stack, Stepper, Center, Card, Badge } from '@mantine/core';
 import { IconCircleCheck, IconAlertCircle, IconFileTypePdf, IconPhoto, IconBrain, IconX } from '@tabler/icons-react';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { enhancePresentation, getJobStatus } from '../services/api';
+import { enhancePresentation, getJobStatus,API_BASE_URL } from '../services/api';
 import { Container, Stack, Title, Text, Alert, Loader, Group, Button, TextInput, Stepper, Center, FileInput, Card, Badge } from '@mantine/core';
 import { IconCircleCheck, IconFileUpload, IconPhoto, IconTag, IconSparkles, IconAlertCircle, IconX } from '@tabler/icons-react';
 import { FileDropzone } from '../components/FileDropzone';
