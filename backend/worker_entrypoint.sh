@@ -1,19 +1,13 @@
-# #!/bin/bash
-# set -e
+#!/bin/bash
+# Exit immediately if a command exits with a non-zero status.
+set -e
 
-# echo "Starting Celery worker..."
-# celery -A worker.celery_app.celery worker --loglevel=info &
+# Start the Celery worker in the background. The '&' is crucial.
+echo "Starting Celery worker process in the background..."
+celery -A worker.celery_app.celery worker --loglevel=info &
 
-# echo "Starting health server on port $PORT..."
-# exec python health.py
-
-!/bin/bash
-# # Start Celery worker in the background
-# celery -A worker.celery_app.celery worker --loglevel=info &
-
-# # Start a dummy healthcheck server for Cloud Run
-# # IMPORTANT: use $PORT instead of hardcoding 8000
-# python -m http.server $PORT --bind 0.0.0.0
-
-echo "Starting ONLY the health server on port $PORT for debugging..."
+# Start the health check server in the foreground.
+# 'exec' replaces the shell process with the python process.
+# This becomes the main process that Cloud Run monitors.
+echo "Starting health check server on port $PORT..."
 exec python health.py

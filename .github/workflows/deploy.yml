@@ -55,13 +55,11 @@ jobs:
             --command="uvicorn" \
             --args="app.main:app,--host,0.0.0.0,--port,8080"
 
-
-
       - name: Store API URL
         run: echo "API_URL=$(gcloud run services describe ppt-studio-api --platform=managed --region=${{ env.GCP_REGION }} --format='value(status.url)')" >> $GITHUB_ENV
 
       # ---------------------------
-      # Build & Deploy Worker Service
+      # Build & Deploy Worker Service (MODIFIED)
       # ---------------------------
       - name: Build and Push Worker Image
         id: build-worker-image
@@ -84,7 +82,10 @@ jobs:
             --no-allow-unauthenticated \
             --vpc-connector=vpc-connector \
             --set-env-vars="REDIS_URL=$REDIS_URL" \
-            --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest"
+            --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
+            --no-cpu-throttling \
+            --startup-cpu-boost
+            # No --command or --args needed here, as the Dockerfile's CMD will run our entrypoint script
 
   deploy-frontend:
     name: Build and Deploy Frontend
