@@ -100,6 +100,8 @@ jobs:
           push: true
           tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-worker:${{ github.sha }}
 
+
+         #this is last working code for deployement 
       - name: Deploy Worker Service
         run: |
           REDIS_HOST=$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host)')
