@@ -50,14 +50,15 @@ jobs:
           REDIS_URL="redis://${REDIS_HOST}:${REDIS_PORT}/0"
 
           gcloud run deploy ppt-studio-api \
-            --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-backend:${{ github.sha }} \
-            --region=${{ env.GCP_REGION }} \
-            --allow-unauthenticated \
-            --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=$REDIS_URL" \
-            --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
-            --command="gunicorn" \
-            --args="-w,4,-k,uvicorn.workers.UvicornWorker,--bind,0.0.0.0:8080,app.main:app"
+          --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-backend:${{ github.sha }} \
+          --region=${{ env.GCP_REGION }} \
+          --allow-unauthenticated \
+          --vpc-connector=vpc-connector \
+          --set-env-vars="REDIS_URL=$REDIS_URL" \
+          --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
+          --command="uvicorn" \
+          --args="app.main:app,--host,0.0.0.0,--port,8080"
+
 
       - name: Store API URL
         run: echo "API_URL=$(gcloud run services describe ppt-studio-api --platform=managed --region=${{ env.GCP_REGION }} --format='value(status.url)')" >> $GITHUB_ENV
