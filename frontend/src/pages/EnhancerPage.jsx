@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { enhancePresentation, getJobStatus,API_BASE_URL } from '../services/api';
-import { Container, Stack, Title, Text, Alert, Loader, Group, Button, TextInput, Stepper, Center, FileInput, Card, Badge } from '@mantine/core';
+import { enhancePresentation, getJobStatus, API_BASE_URL } from '../services/api';
+import { Container, Stack, Title, Text, Alert, Loader, Group, Button, TextInput, Stepper, Center, FileInput, Card } from '@mantine/core';
 import { IconCircleCheck, IconFileUpload, IconPhoto, IconTag, IconSparkles, IconAlertCircle, IconX } from '@tabler/icons-react';
 import { FileDropzone } from '../components/FileDropzone';
 
@@ -56,24 +56,17 @@ export default function EnhancerPage() {
       setStatus('error');
     }
   };
-  
+
   const handleDownload = async () => {
     if (!jobResult) return;
     try {
-      const url = `${API_BASE_URL}/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`;
-      const response = await fetch(url);
+      const response = await fetch(`${API_BASE_URL}/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`);
       if (!response.ok) throw new Error('Download failed!');
-      
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = downloadUrl;
-      a.download = jobResult.output_filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(downloadUrl);
-      a.remove();
+
+      const data = await response.json();
+      if (data.download_url) {
+        window.location.href = data.download_url; // Redirect to the secure GCS URL
+      }
     } catch (err) {
       setError(err.message);
       setStatus('error');

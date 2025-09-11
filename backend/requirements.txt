@@ -13,3 +13,4 @@ google-generativeai
 PyMuPDF
 python-docx
 imagehash
+google-cloud-storage

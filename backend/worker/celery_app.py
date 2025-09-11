@@ -2,13 +2,14 @@ import os
 import io
 import json
 import time
+import shutil
 from pathlib import Path
 from celery import Celery
 from pptx import Presentation
 from pptx.slide import Slide
-from pptx.util import Inches, Pt, Emu
+from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT
+from pptx.enum.text import PP_PARAGRAPH_ALIGNMENT, MSO_AUTO_SIZE
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from PIL import Image
 import imagehash

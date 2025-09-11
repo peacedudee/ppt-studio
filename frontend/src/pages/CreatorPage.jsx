@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { generateSlidePlan, buildPresentation, getJobStatus,API_BASE_URL } from '../services/api';
+import { generateSlidePlan, buildPresentation, getJobStatus, API_BASE_URL } from '../services/api';
 import SlideEditor from '../components/SlideEditor';
 import { Container, Title, Text, Button, Group, Loader, Alert, SimpleGrid, Stack, Stepper, Center, Card, Badge } from '@mantine/core';
 import { IconCircleCheck, IconAlertCircle, IconFileTypePdf, IconPhoto, IconBrain, IconX } from '@tabler/icons-react';
@@ -33,8 +33,9 @@ export default function CreatorPage() {
             setSlidePlan(statusResult.result.slide_plan); 
             setStatus('review');
           } else {
-            const downloadUrl = `${API_BASE_URL}/api/v1/creator/download/${planJobId}`;
-            setFinalUrl(downloadUrl);
+            const downloadResponse = await fetch(`${API_BASE_URL}/api/v1/creator/download/${planJobId}`);
+            const data = await downloadResponse.json();
+            setFinalUrl(data.download_url);
             setStatus('complete');
           }
         } else if (statusResult.status === 'FAILURE') {
@@ -139,7 +140,7 @@ export default function CreatorPage() {
             <Alert icon={<IconCircleCheck size="1rem" />} title="Build Complete!" color="teal" variant="light" radius="md">
                 <Stack>
                     <Text>Your new presentation is ready for download.</Text>
-                    <a href={finalUrl} download><Button fullWidth size="md">Download Presentation</Button></a>
+                    <Button component="a" href={finalUrl} size="md" fullWidth>Download Presentation</Button>
                     <Button variant="default" onClick={handleReset}>Create Another</Button>
                 </Stack>
             </Alert>

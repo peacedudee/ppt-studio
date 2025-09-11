@@ -2,13 +2,15 @@ import uuid
 import shutil
 import json
 import csv
-from pydantic import BaseModel
+import datetime
 from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, File, UploadFile, Form, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from google.cloud import storage
 from worker.celery_app import (
     celery as celery_app,
     enhance_ppt_task, 
@@ -16,18 +18,17 @@ from worker.celery_app import (
     build_ppt_from_plan_task
 )
 
-# Create a temporary directory for our files
+# Configuration
 TEMP_DIR = Path("temp")
 TEMP_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="PPT Studio API")
 
-# --- CORS Middleware Configuration ---
+# CORS Middleware
 origins = [
     "http://localhost:5173",
-    "https://ppt-studio.web.app",
+    "https://ppt-studio.web.app", # Replace with your project ID if different
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -36,16 +37,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount the temp directory to serve images for the review page
-app.mount("/temp", StaticFiles(directory=TEMP_DIR), name="temp")
+# Pydantic Model for Feedback
+class Feedback(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    feedback_type: str
+    message: str
 
-
+# API Endpoints
 @app.get("/health", tags=["Health Check"])
 def health_check():
-    """Simple health check endpoint to confirm the API is running."""
     return {"status": "ok"}
-
-# --- PPT Enhancer Endpoints ---
 
 @app.post("/api/v1/enhancer/process", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Enhancer"])
 async def process_enhancement(
@@ -81,21 +83,16 @@ def download_enhanced_ppt(job_id: str, filename: str):
         return {"error": "File not found or still processing"}, 404
     return FileResponse(processed_file, filename=filename)
 
-# --- PPT Creator Endpoints ---
-
 @app.post("/api/v1/creator/generate-plan", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
 async def generate_plan(files: List[UploadFile] = File(...)):
     job_id = str(uuid.uuid4())
     job_dir = TEMP_DIR / job_id
     job_dir.mkdir()
 
-    # Create a mapping of original filenames to their saved paths
-    saved_files = {}
     for file in files:
         file_path = job_dir / file.filename
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        saved_files[file.filename] = str(file_path)
 
     generate_slide_plan_task.apply_async(args=[job_id], task_id=job_id)
     return {"job_id": job_id}
@@ -119,42 +116,17 @@ def download_created_ppt(job_id: str):
         return {"error": "File not found or still building"}, 404
     return FileResponse(processed_file, filename=f"{job_id}.pptx")
 
-# --- Job Status Endpoint ---
 @app.get("/api/v1/jobs/status/{job_id}", tags=["Jobs"])
 def get_status(job_id: str):
-    """Gets the status of a Celery task."""
     task_result = celery_app.AsyncResult(job_id)
-    result = {
-        "job_id": job_id,
-        "status": task_result.status,
-        "result": task_result.result if task_result.ready() else None,
-    }
-    return result
+    return {"job_id": job_id, "status": task_result.status, "result": task_result.result if task_result.ready() else None}
 
-# --- NEW: Pydantic model for feedback data ---
-class Feedback(BaseModel):
-    name: Optional[str] = None
-    email: Optional[str] = None
-    feedback_type: str
-    message: str
-
-# --- NEW: Feedback Endpoint ---
 @app.post("/api/v1/feedback", status_code=status.HTTP_201_CREATED, tags=["Feedback"])
 async def receive_feedback(feedback: Feedback):
-    """
-    Receives feedback from the UI and saves it to a CSV file.
-    """
     feedback_file = Path("feedback.csv")
-    
-    # Create file with headers if it doesn't exist
     if not feedback_file.exists():
         with open(feedback_file, "w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
-            writer.writerow(["name", "email", "feedback_type", "message"])
-            
-    # Append the new feedback
+            csv.writer(f).writerow(["name", "email", "feedback_type", "message"])
     with open(feedback_file, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([feedback.name, feedback.email, feedback.feedback_type, feedback.message])
-        
+        csv.writer(f).writerow([feedback.name, feedback.email, feedback.feedback_type, feedback.message])
     return {"message": "Feedback received successfully."}
