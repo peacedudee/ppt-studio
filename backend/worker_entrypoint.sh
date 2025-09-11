@@ -1,9 +1,8 @@
 #!/bin/bash
 set -e
 
-# Start Celery worker in background
-celery -A worker.celery_app worker --loglevel=info &
+echo "Starting Celery worker..."
+celery -A worker.celery_app.celery worker --loglevel=info &
 
-# Start a minimal HTTP server for Cloud Run health checks
-# (Cloud Run only needs a 200 OK on /)
-exec uvicorn health:app --host 0.0.0.0 --port $PORT
+echo "Starting health server on port $PORT..."
+exec python health.py

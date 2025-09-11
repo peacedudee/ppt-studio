@@ -9,11 +9,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy everything
 COPY . .
 
-# Make entrypoint executable
-RUN chmod +x worker_entrypoint.sh
+# Copy entrypoint explicitly
+COPY worker_entrypoint.sh /app/worker_entrypoint.sh
+RUN chmod +x /app/worker_entrypoint.sh
 
-# Expose port for Cloud Run
 EXPOSE 8080
 
-# Run Celery + healthcheck server
 CMD ["./worker_entrypoint.sh"]

@@ -45,12 +45,16 @@ jobs:
 
       - name: Deploy API Service
         run: |
+          REDIS_HOST=$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host)')
+          REDIS_PORT=$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(port)')
+          REDIS_URL="redis://${REDIS_HOST}:${REDIS_PORT}/0"
+
           gcloud run deploy ppt-studio-api \
             --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-backend:${{ github.sha }} \
             --region=${{ env.GCP_REGION }} \
             --allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port.string())' | sed 's/ /:/')/0" \
+            --set-env-vars="REDIS_URL=$REDIS_URL" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --command="gunicorn" \
             --args="-w,4,-k,uvicorn.workers.UvicornWorker,--bind,0.0.0.0:8080,app.main:app"
@@ -72,12 +76,16 @@ jobs:
 
       - name: Deploy Worker Service
         run: |
+          REDIS_HOST=$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host)')
+          REDIS_PORT=$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(port)')
+          REDIS_URL="redis://${REDIS_HOST}:${REDIS_PORT}/0"
+
           gcloud run deploy ppt-studio-worker \
             --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-worker:${{ github.sha }} \
             --region=${{ env.GCP_REGION }} \
             --no-allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port.string())' | sed 's/ /:/')/0" \
+            --set-env-vars="REDIS_URL=$REDIS_URL" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest"
 
   deploy-frontend:
