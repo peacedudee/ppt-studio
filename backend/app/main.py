@@ -14,8 +14,8 @@ from google.cloud import storage
 
 from worker.celery_app import (
     celery as celery_app,
-    enhance_ppt_task,
-    generate_slide_plan_task,
+    enhance_ppt_task, 
+    generate_slide_plan_task, 
     build_ppt_from_plan_task
 )
 
@@ -24,11 +24,11 @@ GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
 storage_client = storage.Client()
 app = FastAPI(title="PPT Studio API")
 
-# --- CORS Middleware ---
+# --- CORS Middleware Configuration ---
 origins = [
-    "http://localhost:5173",
-    f"https://{os.getenv('GCP_PROJECT_ID', 'ppt-studio')}.web.app",
-    f"https://{os.getenv('GCP_PROJECT_ID', 'ppt-studio')}--ppt-studio.web.app", # For Firebase previews
+    "http://localhost:5173", # For local development
+    "https://ppt-studio.web.app", # Your production Firebase URL
+    "https://ppt-studio--ppt-studio.web.app" # For Firebase preview channels
 ]
 app.add_middleware(
     CORSMiddleware,
