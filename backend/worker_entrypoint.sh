@@ -8,9 +8,12 @@
 # exec python health.py
 
 !/bin/bash
-# Start Celery worker in the background
-celery -A worker.celery_app.celery worker --loglevel=info &
+# # Start Celery worker in the background
+# celery -A worker.celery_app.celery worker --loglevel=info &
 
-# Start a dummy healthcheck server for Cloud Run
-# IMPORTANT: use $PORT instead of hardcoding 8000
-python -m http.server $PORT --bind 0.0.0.0
+# # Start a dummy healthcheck server for Cloud Run
+# # IMPORTANT: use $PORT instead of hardcoding 8000
+# python -m http.server $PORT --bind 0.0.0.0
+
+echo "Starting ONLY the health server on port $PORT for debugging..."
+exec python health.py
