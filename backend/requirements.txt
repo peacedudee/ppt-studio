@@ -13,4 +13,3 @@ google-generativeai
 PyMuPDF
 python-docx
 imagehash
-gunicorn
