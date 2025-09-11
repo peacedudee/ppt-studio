@@ -86,10 +86,11 @@ jobs:
       #       --no-cpu-throttling \
       #       # No --command or --args needed here, as the Dockerfile's CMD will run our entrypoint script
             # ---------------------------
-      
-      
-      
-      # Build & Deploy Worker Service (DEBUGGING)
+
+
+         #this is last working code for deployement 
+     # ---------------------------
+      # Build & Deploy Worker Service
       # ---------------------------
       - name: Build and Push Worker Image
         id: build-worker-image
@@ -100,15 +101,12 @@ jobs:
           push: true
           tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-worker:${{ github.sha }}
 
-
-         #this is last working code for deployement 
       - name: Deploy Worker Service
         run: |
           REDIS_HOST=$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host)')
           REDIS_PORT=$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(port)')
           REDIS_URL="redis://${REDIS_HOST}:${REDIS_PORT}/0"
 
-          # This command is intentionally simplified to force an error log
           gcloud run deploy ppt-studio-worker \
             --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-worker:${{ github.sha }} \
             --region=${{ env.GCP_REGION }} \
@@ -117,8 +115,8 @@ jobs:
             --set-env-vars="REDIS_URL=$REDIS_URL" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --no-cpu-throttling \
-            --command="python" \
-            --args="health.py"
+            --command="bash" \
+            --args="-c,celery -A worker.celery_app.celery worker --loglevel=info & exec python health.py"
 
 
   deploy-frontend:
