@@ -31,11 +31,15 @@ jobs:
       - name: Configure Docker
         run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
-      - name: Build and Push Docker Image
-        id: build-image
+      # ---------------------------
+      # Build & Deploy API Service
+      # ---------------------------
+      - name: Build and Push API Image
+        id: build-api-image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
+          file: ./backend/Dockerfile
           push: true
           tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-backend:${{ github.sha }}
 
@@ -54,17 +58,27 @@ jobs:
       - name: Store API URL
         run: echo "API_URL=$(gcloud run services describe ppt-studio-api --platform=managed --region=${{ env.GCP_REGION }} --format='value(status.url)')" >> $GITHUB_ENV
 
+      # ---------------------------
+      # Build & Deploy Worker Service
+      # ---------------------------
+      - name: Build and Push Worker Image
+        id: build-worker-image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.worker
+          push: true
+          tags: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-worker:${{ github.sha }}
+
       - name: Deploy Worker Service
         run: |
           gcloud run deploy ppt-studio-worker \
-            --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-backend:${{ github.sha }} \
+            --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.REPO_NAME }}/ppt-studio-worker:${{ github.sha }} \
             --region=${{ env.GCP_REGION }} \
             --no-allow-unauthenticated \
             --vpc-connector=vpc-connector \
             --set-env-vars="REDIS_URL=redis://$(gcloud redis instances describe ppt-studio-redis --region=${{ env.GCP_REGION }} --format='value(host,port.string())' | sed 's/ /:/')/0" \
-            --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
-            --command="bash" \
-            --args="-c,'celery -A worker.celery_app.celery worker --loglevel=info & python -m http.server $PORT'"
+            --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest"
 
   deploy-frontend:
     name: Build and Deploy Frontend
