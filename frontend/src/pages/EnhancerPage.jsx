@@ -15,7 +15,6 @@ export default function EnhancerPage() {
   const [jobResult, setJobResult] = useState(null);
   const [error, setError] = useState('');
 
-  // This effect polls for the result of the 'enhance' job
   useEffect(() => {
     if (status !== 'processing' || !jobId) return;
     
@@ -58,9 +57,9 @@ export default function EnhancerPage() {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (!jobResult) return;
-    // The API now returns a redirect, so we just point the browser to the download endpoint
+    // The backend now provides a redirect to a secure GCS URL
     window.location.href = `${API_BASE_URL}/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`;
   };
   
@@ -78,7 +77,6 @@ export default function EnhancerPage() {
   const nextStep = () => setActiveStep((current) => (current < 3 ? current + 1 : current));
   const prevStep = () => setActiveStep((current) => (current > 0 ? current - 1 : current));
 
-  // --- Main UI Rendering ---
   if (status === 'processing') {
     return (
       <Container size="sm" mt="xl">
