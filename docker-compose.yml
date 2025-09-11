@@ -23,9 +23,11 @@ services:
   worker:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.worker
     container_name: ppt_studio_worker
-    command: celery -A worker.celery_app.celery worker --loglevel=info
+    ports: # Add a port mapping to test the health server locally
+    - "8080:8080"
+    # command: celery -A worker.celery_app.celery worker --loglevel=info
     volumes:
       - ./backend:/app
     env_file:
