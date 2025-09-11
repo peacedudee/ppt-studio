@@ -59,7 +59,6 @@ export default function EnhancerPage() {
 
   const handleDownload = () => {
     if (!jobResult) return;
-    // The backend now provides a redirect to a secure GCS URL
     window.location.href = `${API_BASE_URL}/api/v1/enhancer/download/${jobResult.job_id}/${jobResult.output_filename}`;
   };
   
@@ -77,7 +76,7 @@ export default function EnhancerPage() {
   const nextStep = () => setActiveStep((current) => (current < 3 ? current + 1 : current));
   const prevStep = () => setActiveStep((current) => (current > 0 ? current - 1 : current));
 
-  if (status === 'processing') {
+  if (status === 'processing' || status === 'uploading') {
     return (
       <Container size="sm" mt="xl">
         <Stack align="center" gap="lg">

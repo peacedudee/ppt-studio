@@ -14,8 +14,8 @@ from google.cloud import storage
 
 from worker.celery_app import (
     celery as celery_app,
-    enhance_ppt_task, 
-    generate_slide_plan_task, 
+    enhance_ppt_task,
+    generate_slide_plan_task,
     build_ppt_from_plan_task
 )
 
@@ -40,7 +40,10 @@ app.add_middleware(
 
 # --- Pydantic Models & Helper Functions ---
 class Feedback(BaseModel):
-    name: Optional[str] = None; email: Optional[str] = None; feedback_type: str; message: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+    feedback_type: str
+    message: str
 
 def generate_download_signed_url_v4(blob_name):
     """Generates a secure, temporary URL to download a file from GCS."""
@@ -52,10 +55,15 @@ def generate_download_signed_url_v4(blob_name):
 
 # --- API Endpoints ---
 @app.get("/health", tags=["Health Check"])
-def health_check(): return {"status": "ok"}
+def health_check():
+    return {"status": "ok"}
 
 @app.post("/api/v1/enhancer/process", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Enhancer"])
-async def process_enhancement(ppt_file: UploadFile = File(...), logo_file: Optional[UploadFile] = File(None), credits_text: Optional[str] = Form(None)):
+async def process_enhancement(
+    ppt_file: UploadFile = File(...),
+    logo_file: Optional[UploadFile] = File(None),
+    credits_text: Optional[str] = Form(None)
+):
     job_id = str(uuid.uuid4())
     bucket = storage_client.bucket(GCS_BUCKET_NAME)
     
@@ -111,6 +119,7 @@ def get_status(job_id: str):
 
 @app.post("/api/v1/feedback", status_code=status.HTTP_201_CREATED, tags=["Feedback"])
 async def receive_feedback(feedback: Feedback):
+    # This can still save to a local file on the API server's temporary disk
     feedback_file = Path("feedback.csv")
     if not feedback_file.exists():
         with open(feedback_file, "w", newline="", encoding="utf-8") as f:
