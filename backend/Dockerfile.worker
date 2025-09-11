@@ -1,19 +1,24 @@
-FROM python:3.11-slim
+# Use a full Debian "bullseye" image instead of "slim"
+# This includes many common system libraries out of the box.
+FROM python:3.11-bullseye
 
+# Set the working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy requirements file first to leverage Docker's build cache
 COPY requirements.txt .
+
+# Install the Python packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy everything
+# Copy the rest of your application code into the container
 COPY . .
 
-# Copy entrypoint
-COPY worker_entrypoint.sh .
-RUN chmod +x worker_entrypoint.sh
+# Make the entrypoint script executable
+RUN chmod +x /app/worker_entrypoint.sh
 
-# Cloud Run always sets PORT=8080 by default
+# The port your health check server will listen on
 EXPOSE 8080
 
+# The command to run when the container starts
 CMD ["./worker_entrypoint.sh"]

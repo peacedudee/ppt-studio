@@ -1,8 +1,11 @@
 #!/bin/bash
+# Exit immediately if a command exits with a non-zero status.
 set -e
 
-echo "DEBUG: Skipping Celery worker to test health server deployment..."
-# celery -A worker.celery_app.celery worker --loglevel=info &
+# Start the Celery worker in the background.
+echo "Starting Celery worker process in the background..."
+celery -A worker.celery_app.celery worker --loglevel=info &
 
-echo "Starting ONLY the health server on port $PORT..."
+# Start the health check server in the foreground.
+echo "Starting health check server on port $PORT..."
 exec python health.py
