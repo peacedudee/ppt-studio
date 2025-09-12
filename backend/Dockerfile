@@ -4,8 +4,6 @@ FROM python:3.11-bullseye
 # Set the working directory
 WORKDIR /app
 
-
-
 # Copy requirements file first to leverage Docker's build cache
 COPY requirements.txt .
 
