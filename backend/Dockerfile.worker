@@ -44,5 +44,5 @@ RUN chmod +x /app/worker_entrypoint.sh
 # The port your health check server will listen on
 EXPOSE 8080
 
-# The command to run when the container starts
+
 CMD ["./worker_entrypoint.sh"]
