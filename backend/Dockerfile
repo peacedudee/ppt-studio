@@ -18,4 +18,3 @@ COPY . .
 # Make the entrypoint script executable
 RUN chmod +x /app/worker_entrypoint.sh
 
-# The command to run will be specified in docker-compose.yml or Cloud Run
