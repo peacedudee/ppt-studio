@@ -5,10 +5,34 @@ FROM python:3.11-bullseye
 # Set the working directory
 WORKDIR /app
 
+# Install system dependencies required by your Python packages
+RUN apt-get update && apt-get install -y \
+    # For python-pptx and lxml
+    libxml2-dev \
+    libxslt1-dev \
+    # For Pillow (PIL)
+    libjpeg-dev \
+    zlib1g-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libopenjp2-7-dev \
+    libtiff5-dev \
+    libwebp-dev \
+    # For PyMuPDF
+    libmupdf-dev \
+    mupdf-tools \
+    # General build tools
+    build-essential \
+    pkg-config \
+    # Clean up apt cache to reduce image size
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy requirements file first to leverage Docker's build cache
+
 COPY requirements.txt .
 
 # Install the Python packages
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your application code into the container
