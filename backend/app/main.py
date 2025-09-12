@@ -6,11 +6,13 @@ import shutil
 import datetime
 from pathlib import Path
 from typing import List, Optional
-from fastapi import FastAPI, File, UploadFile, Form, status
+from io import StringIO # Import StringIO for in-memory file handling
+from fastapi import FastAPI, File, UploadFile, Form, status, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.cloud import storage
+from google.cloud.exceptions import NotFound
 
 from worker.celery_app import (
     celery as celery_app,
@@ -20,13 +22,13 @@ from worker.celery_app import (
 )
 
 # --- Configuration ---
-GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
 storage_client = storage.Client()
+GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
 app = FastAPI(title="PPT Studio API")
 
 # --- CORS Middleware Configuration ---
 origins = [
-    # "http://localhost:5173", # For local development
+    "http://localhost:5173", # For local development
     "https://ppt-studio.web.app", # Your production Firebase URL
     "https://ppt-studio--ppt-studio.web.app" # For Firebase preview channels
 ]
@@ -64,6 +66,8 @@ async def process_enhancement(
     logo_file: Optional[UploadFile] = File(None),
     credits_text: Optional[str] = Form(None)
 ):
+    if not GCS_BUCKET_NAME:
+        raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME is not configured.")
     job_id = str(uuid.uuid4())
     bucket = storage_client.bucket(GCS_BUCKET_NAME)
     
@@ -88,6 +92,8 @@ def download_enhanced_ppt(job_id: str, filename: str):
 
 @app.post("/api/v1/creator/generate-plan", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
 async def generate_plan(files: List[UploadFile] = File(...)):
+    if not GCS_BUCKET_NAME:
+        raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME is not configured.")
     job_id = str(uuid.uuid4())
     bucket = storage_client.bucket(GCS_BUCKET_NAME)
     image_filenames = []
@@ -101,6 +107,8 @@ async def generate_plan(files: List[UploadFile] = File(...)):
 
 @app.post("/api/v1/creator/build/{job_id}", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
 async def build_presentation(job_id: str, slide_plan: List[dict]):
+    if not GCS_BUCKET_NAME:
+        raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME is not configured.")
     bucket = storage_client.bucket(GCS_BUCKET_NAME)
     bucket.blob(f"{job_id}/slides.json").upload_from_string(json.dumps(slide_plan, indent=2), content_type='application/json')
     build_task_id = str(uuid.uuid4())
@@ -119,11 +127,40 @@ def get_status(job_id: str):
 
 @app.post("/api/v1/feedback", status_code=status.HTTP_201_CREATED, tags=["Feedback"])
 async def receive_feedback(feedback: Feedback):
-    # This can still save to a local file on the API server's temporary disk
-    feedback_file = Path("feedback.csv")
-    if not feedback_file.exists():
-        with open(feedback_file, "w", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerow(["name", "email", "feedback_type", "message"])
-    with open(feedback_file, "a", newline="", encoding="utf-8") as f:
-        csv.writer(f).writerow([feedback.name, feedback.email, feedback.feedback_type, feedback.message])
-    return {"message": "Feedback received successfully."}
+    if not GCS_BUCKET_NAME:
+        raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME is not configured.")
+    
+    try:
+        bucket = storage_client.bucket(GCS_BUCKET_NAME)
+        feedback_blob = bucket.blob("feedback/feedback.csv")
+        
+        # Download existing content if the file exists
+        try:
+            content = feedback_blob.download_as_text()
+            file_exists = True
+        except NotFound:
+            content = ""
+            file_exists = False
+            
+        # Use StringIO to handle CSV writing in memory
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Write header only if the file is new
+        if not file_exists:
+            writer.writerow(["name", "email", "feedback_type", "message"])
+            
+        # Write the new feedback row
+        writer.writerow([feedback.name, feedback.email, feedback.feedback_type, feedback.message])
+        
+        # Prepend the new content to the existing content
+        new_content = content + output.getvalue()
+        
+        # Upload the updated content back to GCS
+        feedback_blob.upload_from_string(new_content, content_type="text/csv")
+
+        return {"message": "Feedback received successfully."}
+    except Exception as e:
+        # Log the exception e for debugging
+        raise HTTPException(status_code=500, detail="Could not save feedback.")
+
