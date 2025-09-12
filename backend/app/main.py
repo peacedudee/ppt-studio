@@ -26,7 +26,7 @@ app = FastAPI(title="PPT Studio API")
 
 # --- CORS Middleware Configuration ---
 origins = [
-    "http://localhost:5173", # For local development
+    # "http://localhost:5173", # For local development
     "https://ppt-studio.web.app", # Your production Firebase URL
     "https://ppt-studio--ppt-studio.web.app" # For Firebase preview channels
 ]
