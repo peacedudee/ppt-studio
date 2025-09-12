@@ -4,6 +4,8 @@ import { Container, Stack, Title, Text, Alert, Loader, Group, Button, TextInput,
 import { IconCircleCheck, IconFileUpload, IconPhoto, IconTag, IconSparkles, IconAlertCircle, IconX } from '@tabler/icons-react';
 import { FileDropzone } from '../components/FileDropzone';
 
+
+
 export default function EnhancerPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [pptFile, setPptFile] = useState(null);
