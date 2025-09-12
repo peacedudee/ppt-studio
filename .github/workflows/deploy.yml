@@ -108,7 +108,7 @@ jobs:
       # This is a cleaner way to provide the API URL to your Vite app
       - name: Create .env file for Frontend
         run: |
-          echo "VITE_API_URL=${{ env.VITE_API_URL }}" > frontend/.env.production
+          echo "VITE_API_URL=${{ env.VITE_API_URL }}" > frontend/.env
         working-directory: ./frontend
       
       - name: Build React App
