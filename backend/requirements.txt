@@ -14,3 +14,7 @@ PyMuPDF
 python-docx
 imagehash
 google-cloud-storage
+grpcio>=1.59.0
+google-api-python-client>=2.88.0
+google-auth>=2.22.0
+google-auth-httplib2>=0.1.0
