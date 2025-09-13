@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional
 from io import StringIO # Import StringIO for in-memory file handling
 from fastapi import FastAPI, File, UploadFile, Form, status, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.cloud import storage
@@ -133,8 +133,33 @@ async def process_enhancement(
 
 @app.get("/api/v1/enhancer/download/{job_id}/{filename}", tags=["PPT Enhancer"])
 def download_enhanced_ppt(job_id: str, filename: str):
-    url = generate_download_signed_url_v4(f"{job_id}/{filename}")
-    return RedirectResponse(url=url)
+    """Return a redirect to a signed URL when possible; otherwise stream directly from GCS.
+    This avoids requiring a private key in environments where IAM SignBlob is unavailable.
+    """
+    blob_name = f"{job_id}/{filename}"
+    try:
+        url = generate_download_signed_url_v4(blob_name)
+        return RedirectResponse(url=url)
+    except HTTPException:
+        # Fallback: stream from GCS through this API
+        bucket = storage_client.bucket(GCS_BUCKET_NAME)
+        blob = bucket.blob(blob_name)
+        if not blob.exists():
+            raise HTTPException(status_code=404, detail=f"File not found: {blob_name}")
+
+        def iter_chunks(chunk_size=1024 * 1024):
+            with blob.open("rb") as fh:
+                while True:
+                    data = fh.read(chunk_size)
+                    if not data:
+                        break
+                    yield data
+
+        headers = {
+            "Content-Disposition": f"attachment; filename=\"{filename}\""
+        }
+        media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        return StreamingResponse(iter_chunks(), media_type=media_type, headers=headers)
 
 @app.get("/api/v1/enhancer/download-url/{job_id}/{filename}", tags=["PPT Enhancer"])
 def get_enhanced_download_url(job_id: str, filename: str):
