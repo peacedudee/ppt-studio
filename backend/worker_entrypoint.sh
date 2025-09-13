@@ -4,6 +4,16 @@ set -Eeuo pipefail
 echo "=== PPT Studio Worker Starting ==="
 echo "PORT=${PORT:-8080}"
 
+# Sanitize secrets that may include trailing newlines (from Secret Manager)
+if [ -n "${GOOGLE_API_KEY:-}" ]; then
+  # Remove any trailing newlines/carriage returns without printing the secret value
+  CLEAN_KEY=$(printf %s "$GOOGLE_API_KEY" | tr -d '\r\n')
+  if [ "${#CLEAN_KEY}" -ne "${#GOOGLE_API_KEY}" ]; then
+    echo "Trimmed newline from GOOGLE_API_KEY"
+  fi
+  export GOOGLE_API_KEY="$CLEAN_KEY"
+fi
+
 # Graceful shutdown
 pids=()
 cleanup() { for p in "${pids[@]}"; do kill -TERM "$p" 2>/dev/null || true; done; wait || true; }

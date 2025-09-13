@@ -59,7 +59,7 @@ jobs:
             --region=${{ env.GCP_REGION }} \
             --allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }}" \
+            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},GOOGLE_CLOUD_STORAGE_USE_GRPC=false" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --command="uvicorn" \
             --args="app.main:app,--host,0.0.0.0,--port,8080"
@@ -79,7 +79,7 @@ jobs:
             --region=${{ env.GCP_REGION }} \
             --no-allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }}" \
+            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},GOOGLE_CLOUD_STORAGE_USE_GRPC=false" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --no-cpu-throttling \
             --command="/app/worker_entrypoint.sh" # Use absolute path for reliability
