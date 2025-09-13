@@ -60,7 +60,7 @@ jobs:
             --set-env-vars="REDIS_URL=$REDIS_URL" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --command="python" \
-            --args="-m,main"
+            --args="-m,app.main"
 
       - name: Store API URL for Frontend Job
         id: store-api-url
@@ -80,7 +80,7 @@ jobs:
             --set-env-vars="REDIS_URL=$REDIS_URL" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --no-cpu-throttling \
-            --command="./worker_entrypoint.sh" # Specify the worker's startup command
+            --command="/app/worker_entrypoint.sh" # Use absolute path for reliability
 
 
   deploy-frontend:

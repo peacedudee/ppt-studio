@@ -38,11 +38,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of your application code into the container
 COPY . .
 
-# Make the entrypoint script executable
-RUN chmod +x /app/worker_entrypoint.sh
-
 # The port your health check server will listen on
 EXPOSE 8080
 
-
-CMD ["./worker_entrypoint.sh"]
+# Install worker entrypoint and set it as the container entrypoint
+COPY worker_entrypoint.sh /usr/local/bin/worker_entrypoint.sh
+RUN chmod +x /usr/local/bin/worker_entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/worker_entrypoint.sh"]
