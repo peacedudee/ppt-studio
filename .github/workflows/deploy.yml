@@ -68,6 +68,18 @@ jobs:
         id: store-api-url
         run: echo "url=$(gcloud run services describe ppt-studio-api --platform=managed --region=${{ env.GCP_REGION }} --format='value(status.url)')" >> $GITHUB_OUTPUT
 
+      # Ensure the API's runtime service account can sign V4 URLs and read objects
+      - name: Grant API runtime SA permissions
+        run: |
+          API_SA=$(gcloud run services describe ppt-studio-api --region=${{ env.GCP_REGION }} --format='value(spec.template.spec.serviceAccountName)')
+          echo "API runtime SA: $API_SA"
+          # Allow reading objects from the bucket
+          gsutil iam ch serviceAccount:${API_SA}:roles/storage.objectViewer gs://${{ env.GCS_BUCKET_NAME }} || true
+          # Allow signing URLs (signBlob)
+          gcloud iam service-accounts add-iam-policy-binding "$API_SA" \
+            --member="serviceAccount:$API_SA" \
+            --role="roles/iam.serviceAccountTokenCreator" || true
+
       # ---------------------------
       # Deploy Worker Service from the SAME Backend Image
       # ---------------------------

@@ -48,12 +48,28 @@ class Feedback(BaseModel):
     message: str
 
 def generate_download_signed_url_v4(blob_name):
-    """Generates a secure, temporary URL to download a file from GCS."""
+    """Generates a secure, temporary URL to download a file from GCS.
+    Returns a signed URL string or raises HTTPException with details.
+    """
     if not GCS_BUCKET_NAME:
-        raise RuntimeError("GCS_BUCKET_NAME environment variable not set.")
-    bucket = storage_client.bucket(GCS_BUCKET_NAME)
-    blob = bucket.blob(blob_name)
-    return blob.generate_signed_url(version="v4", expiration=datetime.timedelta(minutes=15), method="GET")
+        raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME environment variable not set.")
+    try:
+        bucket = storage_client.bucket(GCS_BUCKET_NAME)
+        blob = bucket.blob(blob_name)
+        # Optional existence check to return 404 instead of generic errors
+        if not blob.exists():
+            raise HTTPException(status_code=404, detail=f"File not found: {blob_name}")
+        url = blob.generate_signed_url(
+            version="v4",
+            expiration=datetime.timedelta(minutes=15),
+            method="GET",
+        )
+        return url
+    except HTTPException:
+        raise
+    except Exception as e:
+        # Common cause: runtime SA lacks roles/iam.serviceAccountTokenCreator to sign URLs
+        raise HTTPException(status_code=500, detail=f"Failed to generate signed URL: {e}")
 
 # --- API Endpoints ---
 @app.get("/health", tags=["Health Check"])
@@ -89,6 +105,12 @@ async def process_enhancement(
 def download_enhanced_ppt(job_id: str, filename: str):
     url = generate_download_signed_url_v4(f"{job_id}/{filename}")
     return RedirectResponse(url=url)
+
+@app.get("/api/v1/enhancer/download-url/{job_id}/{filename}", tags=["PPT Enhancer"])
+def get_enhanced_download_url(job_id: str, filename: str):
+    """Returns signed URL JSON instead of redirect, useful for debugging."""
+    url = generate_download_signed_url_v4(f"{job_id}/{filename}")
+    return {"url": url}
 
 @app.post("/api/v1/creator/generate-plan", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
 async def generate_plan(files: List[UploadFile] = File(...)):
@@ -163,4 +185,3 @@ async def receive_feedback(feedback: Feedback):
     except Exception as e:
         # Log the exception e for debugging
         raise HTTPException(status_code=500, detail="Could not save feedback.")
-
