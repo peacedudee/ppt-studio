@@ -12,6 +12,8 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.cloud import storage
+import google.auth
+import requests
 from google.cloud.exceptions import NotFound
 
 from worker.celery_app import (
@@ -47,6 +49,31 @@ class Feedback(BaseModel):
     feedback_type: str
     message: str
 
+def _get_runtime_service_account_email() -> str | None:
+    # Prefer explicit env override if present
+    env_email = os.getenv("SERVICE_ACCOUNT_EMAIL")
+    if env_email:
+        return env_email
+    # Try to read from metadata server (Cloud Run / GCE)
+    try:
+        r = requests.get(
+            "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/email",
+            headers={"Metadata-Flavor": "Google"},
+            timeout=1.5,
+        )
+        if r.ok:
+            return r.text.strip()
+    except Exception:
+        pass
+    # Try to read from ADC credentials
+    try:
+        creds, _ = google.auth.default()
+        email = getattr(creds, "service_account_email", None)
+        return email
+    except Exception:
+        return None
+
+
 def generate_download_signed_url_v4(blob_name):
     """Generates a secure, temporary URL to download a file from GCS.
     Returns a signed URL string or raises HTTPException with details.
@@ -59,10 +86,13 @@ def generate_download_signed_url_v4(blob_name):
         # Optional existence check to return 404 instead of generic errors
         if not blob.exists():
             raise HTTPException(status_code=404, detail=f"File not found: {blob_name}")
+        # Ensure we have a signer email when running on Cloud Run without a private key
+        signer_email = _get_runtime_service_account_email()
         url = blob.generate_signed_url(
             version="v4",
             expiration=datetime.timedelta(minutes=15),
             method="GET",
+            service_account_email=signer_email,
         )
         return url
     except HTTPException:
