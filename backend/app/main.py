@@ -194,8 +194,37 @@ async def build_presentation(job_id: str, slide_plan: List[dict]):
 
 @app.get("/api/v1/creator/download/{job_id}", tags=["PPT Creator"])
 def download_created_ppt(job_id: str):
+    """Return redirect to signed URL if possible; otherwise stream from GCS."""
+    blob_name = f"{job_id}/presentation.pptx"
+    try:
+        url = generate_download_signed_url_v4(blob_name)
+        return RedirectResponse(url=url)
+    except HTTPException:
+        # Fallback: stream from GCS through this API
+        bucket = storage_client.bucket(GCS_BUCKET_NAME)
+        blob = bucket.blob(blob_name)
+        if not blob.exists():
+            raise HTTPException(status_code=404, detail=f"File not found: {blob_name}")
+
+        def iter_chunks(chunk_size=1024 * 1024):
+            with blob.open("rb") as fh:
+                while True:
+                    data = fh.read(chunk_size)
+                    if not data:
+                        break
+                    yield data
+
+        headers = {
+            "Content-Disposition": "attachment; filename=\"presentation.pptx\""
+        }
+        media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        return StreamingResponse(iter_chunks(), media_type=media_type, headers=headers)
+
+@app.get("/api/v1/creator/download-url/{job_id}", tags=["PPT Creator"])
+def creator_download_url(job_id: str):
+    """Return a signed URL for the generated presentation, if possible."""
     url = generate_download_signed_url_v4(f"{job_id}/presentation.pptx")
-    return RedirectResponse(url=url)
+    return {"url": url}
 
 @app.get("/api/v1/jobs/status/{job_id}", tags=["Jobs"])
 def get_status(job_id: str):
