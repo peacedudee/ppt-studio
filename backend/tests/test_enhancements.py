@@ -10,6 +10,44 @@ from worker.celery_app import (
 )
 
 
+class DummyParent:
+    def __init__(self, shapes):
+        self._shapes = shapes
+
+    def remove(self, element):
+        self._shapes.remove(element.shape)
+
+
+class DummyElement:
+    def __init__(self, parent, shape):
+        self._parent = parent
+        self.shape = shape
+
+    def getparent(self):
+        return self._parent
+
+
+class DummyShape:
+    def __init__(self, text, parent):
+        self.has_text_frame = True
+        self.text = text
+        self.element = DummyElement(parent, self)
+
+
+class DummyMaster:
+    def __init__(self, texts):
+        self.shapes = []
+        parent = DummyParent(self.shapes)
+        for text in texts:
+            shape = DummyShape(text, parent)
+            self.shapes.append(shape)
+
+
+class DummyPresentation:
+    def __init__(self, master_texts):
+        self.slide_masters = [DummyMaster(master_texts)]
+
+
 @pytest.fixture
 def sample_presentation():
     prs = Presentation()
@@ -20,16 +58,7 @@ def sample_presentation():
 
 @pytest.fixture
 def ppt_with_watermark():
-    prs = Presentation()
-    master = prs.slide_masters[0]
-    textbox = master.shapes.add_textbox(
-        left=0,
-        top=0,
-        width=prs.slide_width,
-        height=prs.slide_height,
-    )
-    textbox.text_frame.text = "CONFIDENTIAL"
-    return prs
+    return DummyPresentation(["Confidential", "Regular text"])
 
 
 @pytest.fixture
@@ -64,11 +93,8 @@ def test_add_credits_to_slide_with_custom_text(sample_presentation):
 
 def test_remove_watermarks_from_masters(ppt_with_watermark):
     remove_watermarks_from_masters(ppt_with_watermark)
-    slide_master = ppt_with_watermark.slide_masters[0]
-
-    for shape in slide_master.shapes:
-        if shape.has_text_frame and "CONFIDENTIAL" in shape.text.upper():
-            pytest.fail("Watermark shape was not removed from the master slide")
+    shapes = ppt_with_watermark.slide_masters[0].shapes
+    assert all("CONFIDENTIAL" not in shape.text.upper() for shape in shapes)
 
 
 def test_generate_speaker_notes(slide_with_text):

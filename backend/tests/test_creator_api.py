@@ -10,7 +10,7 @@ def test_submit_assets_for_plan_generation():
     to the creator endpoint and that a background task is correctly queued.
     """
     # We will mock the new Celery task we're about to create
-    with patch('backend.app.main.generate_slide_plan_task.delay') as mock_task:
+    with patch('backend.app.main.generate_slide_plan_task.apply_async') as mock_task:
         # Create dummy files to simulate a multi-file upload
         dummy_pdf = ("source.pdf", b"fake pdf content", "application/pdf")
         dummy_img1 = ("image1.png", b"fake png content", "image/png")
