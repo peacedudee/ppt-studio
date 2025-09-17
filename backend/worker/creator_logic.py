@@ -1,4 +1,3 @@
-import os
 import json
 import fitz  # PyMuPDF
 import docx
@@ -7,14 +6,15 @@ from typing import List
 from PIL import Image
 import google.generativeai as genai
 
+from config import settings
+
 # --- Configure the AI Model ---
 try:
-    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+    if not settings.google_api_key:
+        raise ValueError("GOOGLE_API_KEY is not configured")
+    genai.configure(api_key=settings.google_api_key)
     # Use the vision-capable model
     model = genai.GenerativeModel('gemini-2.0-flash')
-
-
-    
 except Exception as e:
     print(f"Error configuring Google AI: {e}")
     model = None

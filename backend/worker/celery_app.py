@@ -1,7 +1,6 @@
 import os
 import io
 import json
-import time
 import shutil
 from pathlib import Path
 from celery import Celery
@@ -16,21 +15,31 @@ import imagehash
 import google.generativeai as genai
 from google.cloud import storage
 
+from config import settings
+
 # Import other project modules
 from .creator_logic import extract_text_from_document, generate_content_for_batch
 from .ppt_builder import build_presentation_from_plan
 
 # --- Configuration ---
-GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+GCS_BUCKET_NAME = settings.gcs_bucket_name
 storage_client = storage.Client()
-redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-LOGO_PATH = "temp/logo.png" # Default logo path if none is provided
+LOGO_PATH = "temp/logo.png"  # Default logo path if none is provided
 WATERMARK_KEYWORDS = ["CONFIDENTIAL", "DRAFT", "INTERNAL USE"]
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+if settings.google_api_key:
+    genai.configure(api_key=settings.google_api_key)
 
 # --- Initialize Celery ---
-celery = Celery("tasks", broker=redis_url, backend=redis_url)
-celery.conf.update(task_serializer="json", accept_content=["json"], result_serializer="json")
+celery_backend = settings.celery_backend_url
+celery = Celery("tasks", broker=settings.celery_broker_url, backend=celery_backend or None)
+celery.conf.update(
+    task_serializer="json",
+    accept_content=["json"],
+    result_serializer="json",
+    result_expires=settings.celery_result_expires,
+)
+if not celery_backend:
+    celery.conf.update(result_backend=None, task_ignore_result=True)
 
 # --- GCS Helper Functions ---
 def download_blob(blob_name, destination_file_name):

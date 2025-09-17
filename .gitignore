@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .venv/
 .env
+.env.development
+.env.production
 
 # Node.js
 frontend/node_modules/

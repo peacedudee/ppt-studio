@@ -1,4 +1,3 @@
-import os
 import uuid
 import json
 import csv
@@ -23,9 +22,11 @@ from worker.celery_app import (
     build_ppt_from_plan_task
 )
 
+from config import settings
+
 # --- Configuration ---
 storage_client = storage.Client()
-GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+GCS_BUCKET_NAME = settings.gcs_bucket_name
 app = FastAPI(title="PPT Studio API")
 
 # --- CORS Middleware Configuration ---
@@ -51,7 +52,7 @@ class Feedback(BaseModel):
 
 def _get_runtime_service_account_email() -> str | None:
     # Prefer explicit env override if present
-    env_email = os.getenv("SERVICE_ACCOUNT_EMAIL")
+    env_email = settings.service_account_email
     if env_email:
         return env_email
     # Try to read from metadata server (Cloud Run / GCE)
