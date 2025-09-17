@@ -114,6 +114,8 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 This wires services to `.env.development`, mounts the backend code into the containers, and exposes Redis on `localhost:6379` for debugging.
 
+The Vite frontend reads `VITE_API_URL` from `frontend/.env.development` (ignored by git). By default it points to `http://localhost:8000`, so `npm run dev` will call the locally running FastAPI service while the compose stack is up.
+
 #### 7.2. Production-equivalent Validation
 Use the production override to inspect the final container wiring without launching Cloud Run:
 ```
