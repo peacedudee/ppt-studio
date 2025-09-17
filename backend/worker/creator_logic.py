@@ -1,4 +1,3 @@
-import os
 import json
 import fitz  # PyMuPDF
 import docx
@@ -7,17 +6,23 @@ from typing import List
 from PIL import Image
 import google.generativeai as genai
 
+from config import settings
+
+
+class _NoopModel:
+    def generate_content(self, *_args, **_kwargs):
+        raise RuntimeError("Google AI Model is not configured. Check API Key.")
+
+
 # --- Configure the AI Model ---
 try:
-    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-    # Use the vision-capable model
+    if not settings.google_api_key:
+        raise ValueError("GOOGLE_API_KEY is not configured")
+    genai.configure(api_key=settings.google_api_key)
     model = genai.GenerativeModel('gemini-2.0-flash')
-
-
-    
 except Exception as e:
     print(f"Error configuring Google AI: {e}")
-    model = None
+    model = _NoopModel()
 
 def extract_text_from_document(filepath: str) -> str:
     """
@@ -49,7 +54,7 @@ def generate_content_for_batch(source_text: str, image_paths: List[Path]) -> Lis
     Takes the full source text and a BATCH of images, prompts the vision model,
     and returns a list of slide content dictionaries for that batch.
     """
-    if not model:
+    if isinstance(model, _NoopModel):
         raise RuntimeError("Google AI Model is not configured. Check API Key.")
 
     # --- FINAL, OPTIMIZED PROMPT WITH YOUR SCHEMA ---
@@ -127,3 +132,31 @@ def generate_content_for_batch(source_text: str, image_paths: List[Path]) -> Lis
                 "speaker_notes": "This might be due to an API issue or a problem with the prompt."
             }
         ] * len(image_paths)
+
+
+def generate_slide_plan(source_text: str, image_filenames: List[str]) -> List[dict]:
+    """Lightweight wrapper to create a slide plan from raw text and image names.
+
+    The CI tests mock the underlying Gemini call; this helper keeps the real
+    implementation centralized while providing an easy seam for testing.
+    """
+    if isinstance(model, _NoopModel):
+        raise RuntimeError("Google AI Model is not configured. Check API Key.")
+
+    image_catalog = "\n".join(f"- {name}" for name in image_filenames)
+    prompt = f"""
+You are a professional-grade assistant skilled at turning raw source material into
+presentation JSON.
+
+SOURCE TEXT:
+{source_text}
+
+IMAGE LIST:
+{image_catalog}
+
+Return ONLY valid JSON per the documented schema.
+"""
+
+    response = model.generate_content(prompt)
+    cleaned_response = response.text.strip().replace("```json", "").replace("```", "")
+    return json.loads(cleaned_response)

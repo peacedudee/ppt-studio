@@ -11,6 +11,7 @@ env:
   REPO_NAME: ppt-studio-repo
   # Public bucket name for uploads/outputs
   GCS_BUCKET_NAME: ppt-studio-uploads
+  PROD_ENV_SECRET_NAME: ppt-studio-prod-env
 
 jobs:
   deploy-backend:
@@ -37,6 +38,14 @@ jobs:
       - name: Configure Docker
         run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev
 
+      - name: Pull production environment file from Secret Manager
+        run: |
+          gcloud secrets versions access latest --secret=${{ env.PROD_ENV_SECRET_NAME }} > .env.production
+          echo "APP_ENV=production" >> .env.production
+
+      - name: Validate production compose stack
+        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml config
+
       # ---------------------------
       # Build & Push ONE Backend Image for both API and Worker
       # ---------------------------
@@ -59,7 +68,7 @@ jobs:
             --region=${{ env.GCP_REGION }} \
             --allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},GOOGLE_CLOUD_STORAGE_USE_GRPC=false" \
+            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},GOOGLE_CLOUD_STORAGE_USE_GRPC=false,APP_ENV=production" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --command="uvicorn" \
             --args="app.main:app,--host,0.0.0.0,--port,8080"
@@ -91,7 +100,7 @@ jobs:
             --region=${{ env.GCP_REGION }} \
             --no-allow-unauthenticated \
             --vpc-connector=vpc-connector \
-            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},GOOGLE_CLOUD_STORAGE_USE_GRPC=false" \
+            --set-env-vars="REDIS_URL=$REDIS_URL,GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},GOOGLE_CLOUD_STORAGE_USE_GRPC=false,APP_ENV=production" \
             --set-secrets="GOOGLE_API_KEY=gemini-api-key:latest" \
             --no-cpu-throttling \
             --min-instances=1 \

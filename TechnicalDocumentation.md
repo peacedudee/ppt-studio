@@ -1,13 +1,9 @@
-Of course. Here is the final Technical Design Document, updated to reflect all the features, architectural decisions, and workflows we've built and refined together.
-
-This document represents the complete state of the PPT Studio application as of our last development sprint.
 
 ***
-## Final Technical Design Document: PPT Studio
+## Technical Design Document: PPT Studio
 
 **Version:** 3.0
-**Date:** September 11, 2025
-**Status:** Feature Complete
+**Date:** September 17, 2025
 
 ### 1. Introduction
 
@@ -89,3 +85,66 @@ The API exposes endpoints for health checks, job status, file downloads, and fee
 * `POST /api/v1/creator/generate-plan`: Accepts multiple `files` (source doc + images) to start a plan generation job.
 * `POST /api/v1/creator/build/{job_id}`: Accepts an edited `slide_plan` in the request body to start the final build task.
 * `POST /api/v1/feedback`: Accepts user feedback and saves it to a server-side CSV file.
+
+---
+### 6. Environment Configuration
+
+#### 6.1. Environment Files
+* `.env.development` — Local-only file checked out with the repository; sets `APP_ENV=development` and points Celery/Redis to the Docker Compose services.
+* `.env.production` — Materialized during CI/CD from the Secret Manager entry `ppt-studio-prod-env`; the workflow appends `APP_ENV=production` before deploying.
+* `.env` — Legacy file retained for backward compatibility; not referenced by the new tooling.
+
+> **Security:** Both `.env.development` and `.env.production` are listed in `.gitignore`. Never commit secrets. Update the Secret Manager payload when production configuration changes (e.g., rotating Redis URLs or toggling `CELERY_ENABLE_RESULT_BACKEND`).
+
+#### 6.2. Central Settings Module
+`backend/config/settings.py` unifies environment lookups. Key outputs:
+* `settings.celery_broker_url` and `settings.celery_backend_url` drive Celery configuration.
+* `settings.gcs_bucket_name`, `settings.google_api_key`, and `settings.service_account_email` back the storage and Gemini dependencies.
+* `settings.port` standardizes service ports for API and health endpoints.
+
+The worker, API, and diagnostics modules import this settings object instead of calling `os.getenv` directly, ensuring parity between environments.
+
+---
+### 7. Runtime & Compose Profiles
+
+#### 7.1. Local Development
+Run the full stack with hot reload and a local Redis broker:
+```
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+This wires services to `.env.development`, mounts the backend code into the containers, and exposes Redis on `localhost:6379` for debugging.
+
+The Vite frontend reads `VITE_API_URL` from `frontend/.env.development` (ignored by git). By default it points to `http://localhost:8000`, so `npm run dev` will call the locally running FastAPI service while the compose stack is up.
+
+Both API and worker containers mount `./local-storage` into `/data/storage`, honoring `LOCAL_STORAGE_PATH=/data/storage` from `.env.development`. This keeps uploads and generated artifacts shared between services without touching cloud buckets.
+
+#### 7.2. Production-equivalent Validation
+Use the production override to inspect the final container wiring without launching Cloud Run:
+```
+docker compose -f docker-compose.yml -f docker-compose.prod.yml config
+```
+The CI workflow runs this command to catch configuration drift before deployment.
+
+#### 7.3. CI/CD Integration
+* `deploy.yml` triggers only on `main` branch pushes. It retrieves `.env.production` from Secret Manager, builds a single backend image, and deploys API + worker services to Cloud Run with `APP_ENV=production`.
+* `ci-dev.yml` runs on `dev` pushes and pull requests. It executes backend pytest (with ephemeral Redis), validates the dev compose stack, and builds the frontend bundle.
+
+---
+### 8. Branching & Release Strategy
+
+#### 8.1. Branch Roles
+* `dev` — Integration branch for day-to-day development. Feature branches target `dev` via pull requests.
+* `main` — Protected release branch; merging into `main` triggers production deployment.
+
+#### 8.2. Protection Rules
+Configure in GitHub → Settings → Branches:
+1. **main rule:** Require pull requests, at least one approval, conversation resolution, and passing status checks (deploy workflow + CI). Optionally enforce linear history.
+2. **dev rule (optional):** Require pull requests and passing `CI (dev branch)` checks to keep the branch green while allowing fast iteration.
+
+#### 8.3. Promotion Flow
+1. Branch from `dev` for new work; open a PR back into `dev` when ready.
+2. After stabilizing, open a PR from `dev` into `main`. Resolve conflicts, ensure CI passes, then merge.
+3. The merge deploys to production. Immediately back-merge `main` into `dev` to sync hotfixes and version bumps.
+
+#### 8.4. Hotfix Procedure
+For urgent fixes, branch from `main`, patch, and PR directly into `main`. After deployment, merge `main` back into `dev` so the fix propagates.

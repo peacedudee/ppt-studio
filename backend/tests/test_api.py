@@ -17,7 +17,7 @@ def test_submit_ppt_for_enhancement_with_branding():
     Verifies the background task is called with the correct parameters.
     """
     # Patch the enhance_ppt_task where it's used in the main app
-    with patch('backend.app.main.enhance_ppt_task.delay') as mock_task:
+    with patch('backend.app.main.enhance_ppt_task.apply_async') as mock_task:
         # Define the custom branding data
         custom_credits = "Custom Credits by Anju"
         
@@ -43,9 +43,10 @@ def test_submit_ppt_for_enhancement_with_branding():
         
         # Assert that our Celery task was called with the new arguments
         mock_task.assert_called_once()
-        call_args = mock_task.call_args[0]
-        
+        args = mock_task.call_args.kwargs.get("args")
+        assert args is not None
+
         # Check that the task received the filenames and custom text
-        assert "test.pptx" in call_args[0] # input_path
-        assert "custom_logo.png" in call_args[2] # logo_path
-        assert call_args[3] == custom_credits # credits_text
+        assert "test.pptx" in args[0]  # input_path
+        assert "custom_logo.png" in args[2]  # logo_path
+        assert args[3] == custom_credits  # credits_text

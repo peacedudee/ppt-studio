@@ -1,0 +1,25 @@
+services:
+  api:
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - ./.env.development
+    volumes:
+      - ./backend:/app
+      - ./local-storage:/data/storage
+    depends_on:
+      - redis
+
+  worker:
+    env_file:
+      - ./.env.development
+    volumes:
+      - ./backend:/app
+      - ./local-storage:/data/storage
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: ppt_studio_redis
+    ports:
+      - "6379:6379"

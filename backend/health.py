@@ -8,6 +8,8 @@ from google.cloud import storage
 from datetime import datetime
 import traceback
 
+from config import settings
+
 app = FastAPI(title="PPT Studio Worker Health Check")
 
 @app.get("/")
@@ -35,7 +37,7 @@ def detailed_health():
     
     # Redis check
     try:
-        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        redis_url = settings.celery_broker_url
         r = redis.from_url(redis_url, socket_connect_timeout=5, socket_timeout=5)
         r.ping()
         
@@ -54,14 +56,14 @@ def detailed_health():
         health_status["checks"]["redis"] = {
             "status": "failed",
             "error": str(e),
-            "url": redis_url[:30] + "..." if 'redis_url' in locals() else "not_set"
+            "url": redis_url[:30] + "..." if redis_url else "not_set"
         }
         health_status["status"] = "degraded"
     
     # GCS check
     try:
         client = storage.Client()
-        bucket_name = os.getenv('GCS_BUCKET_NAME')
+        bucket_name = settings.gcs_bucket_name
         
         if not bucket_name:
             raise Exception("GCS_BUCKET_NAME not set")
@@ -88,7 +90,7 @@ def detailed_health():
         health_status["checks"]["gcs"] = {
             "status": "failed",
             "error": str(e),
-            "bucket": os.getenv('GCS_BUCKET_NAME', 'not_set')
+            "bucket": settings.gcs_bucket_name or 'not_set'
         }
         health_status["status"] = "degraded"
     
@@ -233,6 +235,6 @@ def test_celery_task():
         }
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8080))
+    port = settings.port
     print(f"Starting health check server on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)

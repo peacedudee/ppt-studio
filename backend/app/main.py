@@ -1,4 +1,3 @@
-import os
 import uuid
 import json
 import csv
@@ -12,6 +11,7 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.cloud import storage
+from google.auth.exceptions import DefaultCredentialsError
 import google.auth
 import requests
 from google.cloud.exceptions import NotFound
@@ -23,9 +23,25 @@ from worker.celery_app import (
     build_ppt_from_plan_task
 )
 
+from config import settings
+from config.storage import LocalStorageClient
+
 # --- Configuration ---
-storage_client = storage.Client()
-GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+
+
+def _create_storage_client() -> storage.Client:
+    if settings.use_local_storage:
+        return LocalStorageClient()
+    try:
+        return storage.Client()
+    except DefaultCredentialsError:
+        if settings.is_development:
+            return LocalStorageClient()
+        raise
+
+
+storage_client = _create_storage_client()
+GCS_BUCKET_NAME = settings.gcs_bucket_name
 app = FastAPI(title="PPT Studio API")
 
 # --- CORS Middleware Configuration ---
@@ -51,7 +67,7 @@ class Feedback(BaseModel):
 
 def _get_runtime_service_account_email() -> str | None:
     # Prefer explicit env override if present
-    env_email = os.getenv("SERVICE_ACCOUNT_EMAIL")
+    env_email = settings.service_account_email
     if env_email:
         return env_email
     # Try to read from metadata server (Cloud Run / GCE)
@@ -78,6 +94,8 @@ def generate_download_signed_url_v4(blob_name):
     """Generates a secure, temporary URL to download a file from GCS.
     Returns a signed URL string or raises HTTPException with details.
     """
+    if settings.use_local_storage:
+        raise HTTPException(status_code=501, detail="Signed URLs unavailable in local storage mode")
     if not GCS_BUCKET_NAME:
         raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME environment variable not set.")
     try:
@@ -100,6 +118,27 @@ def generate_download_signed_url_v4(blob_name):
     except Exception as e:
         # Common cause: runtime SA lacks roles/iam.serviceAccountTokenCreator to sign URLs
         raise HTTPException(status_code=500, detail=f"Failed to generate signed URL: {e}")
+
+
+def _stream_blob_response(blob_name: str, download_filename: str):
+    bucket = storage_client.bucket(GCS_BUCKET_NAME)
+    blob = bucket.blob(blob_name)
+    if not blob.exists():
+        raise HTTPException(status_code=404, detail=f"File not found: {blob_name}")
+
+    def iter_chunks(chunk_size=1024 * 1024):
+        with blob.open("rb") as fh:
+            while True:
+                data = fh.read(chunk_size)
+                if not data:
+                    break
+                yield data
+
+    headers = {
+        "Content-Disposition": f"attachment; filename=\"{download_filename}\""
+    }
+    media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    return StreamingResponse(iter_chunks(), media_type=media_type, headers=headers)
 
 # --- API Endpoints ---
 @app.get("/health", tags=["Health Check"])
@@ -137,33 +176,19 @@ def download_enhanced_ppt(job_id: str, filename: str):
     This avoids requiring a private key in environments where IAM SignBlob is unavailable.
     """
     blob_name = f"{job_id}/{filename}"
+    if settings.use_local_storage:
+        return _stream_blob_response(blob_name, filename)
     try:
         url = generate_download_signed_url_v4(blob_name)
         return RedirectResponse(url=url)
     except HTTPException:
-        # Fallback: stream from GCS through this API
-        bucket = storage_client.bucket(GCS_BUCKET_NAME)
-        blob = bucket.blob(blob_name)
-        if not blob.exists():
-            raise HTTPException(status_code=404, detail=f"File not found: {blob_name}")
-
-        def iter_chunks(chunk_size=1024 * 1024):
-            with blob.open("rb") as fh:
-                while True:
-                    data = fh.read(chunk_size)
-                    if not data:
-                        break
-                    yield data
-
-        headers = {
-            "Content-Disposition": f"attachment; filename=\"{filename}\""
-        }
-        media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        return StreamingResponse(iter_chunks(), media_type=media_type, headers=headers)
+        return _stream_blob_response(blob_name, filename)
 
 @app.get("/api/v1/enhancer/download-url/{job_id}/{filename}", tags=["PPT Enhancer"])
 def get_enhanced_download_url(job_id: str, filename: str):
     """Returns signed URL JSON instead of redirect, useful for debugging."""
+    if settings.use_local_storage:
+        return {"url": f"/api/v1/enhancer/download/{job_id}/{filename}"}
     url = generate_download_signed_url_v4(f"{job_id}/{filename}")
     return {"url": url}
 
@@ -196,33 +221,19 @@ async def build_presentation(job_id: str, slide_plan: List[dict]):
 def download_created_ppt(job_id: str):
     """Return redirect to signed URL if possible; otherwise stream from GCS."""
     blob_name = f"{job_id}/presentation.pptx"
+    if settings.use_local_storage:
+        return _stream_blob_response(blob_name, "presentation.pptx")
     try:
         url = generate_download_signed_url_v4(blob_name)
         return RedirectResponse(url=url)
     except HTTPException:
-        # Fallback: stream from GCS through this API
-        bucket = storage_client.bucket(GCS_BUCKET_NAME)
-        blob = bucket.blob(blob_name)
-        if not blob.exists():
-            raise HTTPException(status_code=404, detail=f"File not found: {blob_name}")
-
-        def iter_chunks(chunk_size=1024 * 1024):
-            with blob.open("rb") as fh:
-                while True:
-                    data = fh.read(chunk_size)
-                    if not data:
-                        break
-                    yield data
-
-        headers = {
-            "Content-Disposition": "attachment; filename=\"presentation.pptx\""
-        }
-        media_type = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        return StreamingResponse(iter_chunks(), media_type=media_type, headers=headers)
+        return _stream_blob_response(blob_name, "presentation.pptx")
 
 @app.get("/api/v1/creator/download-url/{job_id}", tags=["PPT Creator"])
 def creator_download_url(job_id: str):
     """Return a signed URL for the generated presentation, if possible."""
+    if settings.use_local_storage:
+        return {"url": f"/api/v1/creator/download/{job_id}"}
     url = generate_download_signed_url_v4(f"{job_id}/presentation.pptx")
     return {"url": url}
 
