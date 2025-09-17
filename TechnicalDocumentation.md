@@ -116,6 +116,8 @@ This wires services to `.env.development`, mounts the backend code into the cont
 
 The Vite frontend reads `VITE_API_URL` from `frontend/.env.development` (ignored by git). By default it points to `http://localhost:8000`, so `npm run dev` will call the locally running FastAPI service while the compose stack is up.
 
+Both API and worker containers mount `./local-storage` into `/data/storage`, honoring `LOCAL_STORAGE_PATH=/data/storage` from `.env.development`. This keeps uploads and generated artifacts shared between services without touching cloud buckets.
+
 #### 7.2. Production-equivalent Validation
 Use the production override to inspect the final container wiring without launching Cloud Run:
 ```
