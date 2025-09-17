@@ -24,16 +24,19 @@ from worker.celery_app import (
 )
 
 from config import settings
+from config.storage import LocalStorageClient
 
 # --- Configuration ---
 
 
 def _create_storage_client() -> storage.Client:
+    if settings.use_local_storage:
+        return LocalStorageClient()
     try:
         return storage.Client()
     except DefaultCredentialsError:
         if settings.is_development:
-            return storage.Client.create_anonymous_client()
+            return LocalStorageClient()
         raise
 
 

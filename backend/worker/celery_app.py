@@ -17,15 +17,23 @@ from google.cloud import storage
 from google.auth.exceptions import DefaultCredentialsError
 
 from config import settings
+from config.storage import LocalStorageClient
+
+
+class _NoopModel:
+    def generate_content(self, *_args, **_kwargs):
+        raise RuntimeError("Speaker notes model is not configured")
 
 
 def _create_storage_client() -> storage.Client:
     """Instantiate a storage client with graceful fallback for local/dev runs."""
+    if settings.use_local_storage:
+        return LocalStorageClient()
     try:
         return storage.Client()
     except DefaultCredentialsError:
         if settings.is_development:
-            return storage.Client.create_anonymous_client()
+            return LocalStorageClient()
         raise
 
 
@@ -40,6 +48,11 @@ LOGO_PATH = "temp/logo.png"  # Default logo path if none is provided
 WATERMARK_KEYWORDS = ["CONFIDENTIAL", "DRAFT", "INTERNAL USE"]
 if settings.google_api_key:
     genai.configure(api_key=settings.google_api_key)
+try:
+    model = genai.GenerativeModel('gemini-1.5-flash') if settings.google_api_key else _NoopModel()
+except Exception as exc:
+    print(f"Error configuring speaker notes model: {exc}")
+    model = _NoopModel()
 
 # --- Initialize Celery ---
 celery_backend = settings.celery_backend_url
@@ -135,7 +148,8 @@ def generate_and_add_speaker_notes(slide: Slide):
     try:
         slide_text = extract_text_from_slide(slide)
         if not slide_text: return
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        if isinstance(model, _NoopModel):
+            raise RuntimeError("Speaker notes model is not configured")
         prompt = f"Generate a concise, professional speaker note for a presentation slide with the following content:\n\n---\n{slide_text}\n---"
         response = model.generate_content(prompt)
         if response.text:

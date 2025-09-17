@@ -22,6 +22,7 @@ jobs:
       APP_ENV: development
       GCS_BUCKET_NAME: test-bucket
       GOOGLE_API_KEY: dummy-key
+      USE_LOCAL_STORAGE: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

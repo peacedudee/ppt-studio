@@ -37,6 +37,9 @@ class Settings:
         self.gcs_bucket_name = os.getenv("GCS_BUCKET_NAME")
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         self.service_account_email = os.getenv("SERVICE_ACCOUNT_EMAIL")
+        self.use_local_storage = _env_bool(
+            "USE_LOCAL_STORAGE", self.is_development
+        )
 
         self.port = int(os.getenv("PORT", "8080"))
 

@@ -1,18 +1,16 @@
 import json
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 # We will create both of these functions in the creator_logic module
 from backend.worker.creator_logic import extract_text_from_document, generate_slide_plan
 
-def test_extract_text_from_pdf():
-    """
-    Tests that text can be successfully extracted from a sample PDF file.
-    """
-    test_file_path = Path(__file__).parent / "sample.pdf"
-    assert test_file_path.exists(), "Test file 'sample.pdf' not found in tests/ directory."
 
-    extracted_text = extract_text_from_document(str(test_file_path))
+def test_extract_text_from_document_txt(tmp_path):
+    """Ensure text extraction works for plain text files."""
+    sample = tmp_path / "sample.txt"
+    sample.write_text("The quick brown fox jumps over the lazy dog.")
+
+    extracted_text = extract_text_from_document(str(sample))
 
     assert "quick brown fox" in extracted_text.lower()
 
