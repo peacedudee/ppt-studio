@@ -14,8 +14,20 @@ from PIL import Image
 import imagehash
 import google.generativeai as genai
 from google.cloud import storage
+from google.auth.exceptions import DefaultCredentialsError
 
 from config import settings
+
+
+def _create_storage_client() -> storage.Client:
+    """Instantiate a storage client with graceful fallback for local/dev runs."""
+    try:
+        return storage.Client()
+    except DefaultCredentialsError:
+        if settings.is_development:
+            return storage.Client.create_anonymous_client()
+        raise
+
 
 # Import other project modules
 from .creator_logic import extract_text_from_document, generate_content_for_batch
@@ -23,7 +35,7 @@ from .ppt_builder import build_presentation_from_plan
 
 # --- Configuration ---
 GCS_BUCKET_NAME = settings.gcs_bucket_name
-storage_client = storage.Client()
+storage_client = _create_storage_client()
 LOGO_PATH = "temp/logo.png"  # Default logo path if none is provided
 WATERMARK_KEYWORDS = ["CONFIDENTIAL", "DRAFT", "INTERNAL USE"]
 if settings.google_api_key:

@@ -20,6 +20,8 @@ jobs:
     env:
       REDIS_URL: redis://localhost:6379/0
       APP_ENV: development
+      GCS_BUCKET_NAME: test-bucket
+      GOOGLE_API_KEY: dummy-key
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,8 +37,9 @@ jobs:
           pip install -r backend/requirements.txt
 
       - name: Run pytest
-        run: pytest
-        working-directory: backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: pytest backend/tests
 
       - name: Validate dev compose stack
         run: docker compose -f docker-compose.yml -f docker-compose.dev.yml config

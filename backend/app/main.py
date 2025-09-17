@@ -11,6 +11,7 @@ from fastapi.responses import RedirectResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.cloud import storage
+from google.auth.exceptions import DefaultCredentialsError
 import google.auth
 import requests
 from google.cloud.exceptions import NotFound
@@ -25,7 +26,18 @@ from worker.celery_app import (
 from config import settings
 
 # --- Configuration ---
-storage_client = storage.Client()
+
+
+def _create_storage_client() -> storage.Client:
+    try:
+        return storage.Client()
+    except DefaultCredentialsError:
+        if settings.is_development:
+            return storage.Client.create_anonymous_client()
+        raise
+
+
+storage_client = _create_storage_client()
 GCS_BUCKET_NAME = settings.gcs_bucket_name
 app = FastAPI(title="PPT Studio API")
 
