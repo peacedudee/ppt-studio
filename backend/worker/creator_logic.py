@@ -127,3 +127,31 @@ def generate_content_for_batch(source_text: str, image_paths: List[Path]) -> Lis
                 "speaker_notes": "This might be due to an API issue or a problem with the prompt."
             }
         ] * len(image_paths)
+
+
+def generate_slide_plan(source_text: str, image_filenames: List[str]) -> List[dict]:
+    """Lightweight wrapper to create a slide plan from raw text and image names.
+
+    The CI tests mock the underlying Gemini call; this helper keeps the real
+    implementation centralized while providing an easy seam for testing.
+    """
+    if not model:
+        raise RuntimeError("Google AI Model is not configured. Check API Key.")
+
+    image_catalog = "\n".join(f"- {name}" for name in image_filenames)
+    prompt = f"""
+You are a professional-grade assistant skilled at turning raw source material into
+presentation JSON.
+
+SOURCE TEXT:
+{source_text}
+
+IMAGE LIST:
+{image_catalog}
+
+Return ONLY valid JSON per the documented schema.
+"""
+
+    response = model.generate_content(prompt)
+    cleaned_response = response.text.strip().replace("```json", "").replace("```", "")
+    return json.loads(cleaned_response)
