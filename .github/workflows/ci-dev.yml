@@ -37,6 +37,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
+      - name: Create dev env file
+        run: |
+          cat <<'ENV' > .env.development
+          APP_ENV=development
+          REDIS_URL=redis://localhost:6379/0
+          GCS_BUCKET_NAME=test-bucket
+          GOOGLE_API_KEY=dummy-key
+          USE_LOCAL_STORAGE=true
+          ENV
+
       - name: Run pytest
         env:
           PYTHONPATH: ${{ github.workspace }}
