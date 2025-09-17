@@ -1,4 +1,4 @@
-import { AppShell, Burger, Group, Title } from '@mantine/core';
+import { AppShell, Burger, Button, Group, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { NavLink, Link } from 'react-router-dom'; // <-- Import Link
 import classes from './AppLayout.module.css';
@@ -13,14 +13,15 @@ export function AppLayout({ children }) {
       padding="md"
     >
       <AppShell.Header withBorder={false} style={{ borderBottom: '1px solid var(--mantine-color-dark-4)' }}>
-        <Group h="100%" px="md">
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-          
-          {/* --- THIS IS THE CHANGE --- */}
-          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <Title order={4}>PPT Studio</Title>
-          </Link>
+        <Group h="100%" px="md" justify="space-between" w="100%">
+          <Group gap="sm">
+            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Title order={4}>PPT Studio</Title>
+            </Link>
+          </Group>
 
+          <Button variant="light" radius="md">Test Action</Button>
         </Group>
       </AppShell.Header>
 
