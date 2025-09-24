@@ -18,9 +18,10 @@ from google.cloud.exceptions import NotFound
 
 from worker.celery_app import (
     celery as celery_app,
-    enhance_ppt_task, 
-    generate_slide_plan_task, 
-    build_ppt_from_plan_task
+    enhance_ppt_task,
+    generate_outline_task,
+    generate_slide_plan_task,
+    build_ppt_from_plan_task,
 )
 
 from config import settings
@@ -42,6 +43,26 @@ def _create_storage_client() -> storage.Client:
 
 storage_client = _create_storage_client()
 GCS_BUCKET_NAME = settings.gcs_bucket_name
+
+
+def _metadata_blob(bucket, job_id: str):
+    return bucket.blob(f"{job_id}/metadata.json")
+
+
+def _load_job_metadata(bucket, job_id: str) -> dict:
+    blob = _metadata_blob(bucket, job_id)
+    if not blob.exists():
+        return {}
+    try:
+        return json.loads(blob.download_as_text())
+    except Exception:
+        return {}
+
+
+def _store_job_metadata(bucket, job_id: str, metadata: dict) -> None:
+    _metadata_blob(bucket, job_id).upload_from_string(
+        json.dumps(metadata, indent=2), content_type="application/json"
+    )
 app = FastAPI(title="PPT Studio API")
 
 # --- CORS Middleware Configuration ---
@@ -57,6 +78,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def ensure_cors_headers(request, call_next):
+    response = await call_next(request)
+    origin = request.headers.get("origin")
+    if origin and origin in origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = response.headers.get("Vary", "") + (", " if response.headers.get("Vary") else "") + "Origin"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 # --- Pydantic Models & Helper Functions ---
 class Feedback(BaseModel):
@@ -192,20 +223,166 @@ def get_enhanced_download_url(job_id: str, filename: str):
     url = generate_download_signed_url_v4(f"{job_id}/{filename}")
     return {"url": url}
 
-@app.post("/api/v1/creator/generate-plan", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
-async def generate_plan(files: List[UploadFile] = File(...)):
+@app.post("/api/v1/creator/generate-outline", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
+async def generate_outline(
+    source_file: UploadFile | None = File(None),
+    slide_count: int | None = Form(None),
+    source_text: str | None = Form(None),
+):
     if not GCS_BUCKET_NAME:
         raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME is not configured.")
+
+    pasted_text = (source_text or "").strip()
+    has_file = bool(source_file and source_file.filename)
+
+    if not has_file and not pasted_text:
+        raise HTTPException(status_code=400, detail="Provide a source document or paste source text to continue.")
+
+    target_slide_count: int | None = None
+    if slide_count is not None:
+        try:
+            target_slide_count = max(1, min(int(slide_count), 30))
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="slide_count must be an integer value.")
+
     job_id = str(uuid.uuid4())
     bucket = storage_client.bucket(GCS_BUCKET_NAME)
-    image_filenames = []
-    for file in files:
+    metadata: dict[str, object] = {}
+
+    source_blob_path: str | None = None
+
+    if has_file:
+        source_blob_path = f"source/{source_file.filename}"
+        source_file.file.seek(0)
+        bucket.blob(f"{job_id}/{source_blob_path}").upload_from_file(
+            source_file.file, content_type=source_file.content_type
+        )
+        metadata.update(
+            {
+                "source_filename": source_file.filename,
+                "source_content_type": source_file.content_type,
+                "source_input_type": "file_upload",
+            }
+        )
+
+    if pasted_text:
+        text_blob_path = f"source/pasted-{uuid.uuid4().hex}.txt"
+        bucket.blob(f"{job_id}/{text_blob_path}").upload_from_string(
+            pasted_text, content_type="text/plain"
+        )
+        metadata.setdefault("source_text_preview", pasted_text[:500])
+        if not source_blob_path:
+            source_blob_path = text_blob_path
+            metadata.setdefault("source_filename", Path(text_blob_path).name)
+            metadata.setdefault("source_content_type", "text/plain")
+            metadata["source_input_type"] = "pasted_text"
+        else:
+            metadata["supplemental_text_present"] = True
+
+    if not source_blob_path:
+        raise HTTPException(status_code=400, detail="Unable to determine source material for outline generation.")
+
+    metadata["source_blob"] = source_blob_path
+    if target_slide_count:
+        metadata["desired_slide_count"] = target_slide_count
+
+    _store_job_metadata(bucket, job_id, metadata)
+
+    outline_task_id = f"{job_id}-outline"
+    generate_outline_task.apply_async(
+        kwargs={
+            "job_id": job_id,
+            "source_blob": source_blob_path,
+        },
+        task_id=outline_task_id,
+    )
+
+    return {
+        "job_id": job_id,
+        "outline_task_id": outline_task_id,
+        "source_filename": metadata.get("source_filename"),
+        "source_blob": source_blob_path,
+        "slide_count": target_slide_count,
+    }
+
+
+@app.post("/api/v1/creator/generate-plan", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
+async def generate_plan(
+    job_id: Optional[str] = Form(None),
+    image_strategy: str = Form("uploaded"),
+    files: List[UploadFile] | None = File(None),
+):
+    if not GCS_BUCKET_NAME:
+        raise HTTPException(status_code=500, detail="GCS_BUCKET_NAME is not configured.")
+
+    bucket = storage_client.bucket(GCS_BUCKET_NAME)
+    workspace_id = job_id or str(uuid.uuid4())
+    metadata = _load_job_metadata(bucket, workspace_id)
+    source_blob_path = metadata.get("source_blob")
+
+    strategy = (image_strategy or "uploaded").strip().lower()
+    allowed_strategies = {"uploaded", "unsplash", "gemini_line_art"}
+    if strategy not in allowed_strategies:
+        raise HTTPException(status_code=400, detail=f"Unsupported image strategy: {image_strategy}")
+
+    incoming_files = files or []
+    image_records = []
+    uploaded_source_blob = None
+
+    for file in incoming_files:
+        file.file.seek(0)
         if file.content_type and file.content_type.startswith('image/'):
-            image_filenames.append(file.filename)
-        bucket.blob(f"{job_id}/{file.filename}").upload_from_file(file.file, content_type=file.content_type)
-    
-    generate_slide_plan_task.apply_async(args=[job_id, image_filenames], task_id=job_id)
-    return {"job_id": job_id}
+            blob_path = f"images/{file.filename}"
+            bucket.blob(f"{workspace_id}/{blob_path}").upload_from_file(
+                file.file, content_type=file.content_type
+            )
+            image_records.append({"blob_path": blob_path, "filename": file.filename})
+        else:
+            uploaded_source_blob = f"source/{file.filename}"
+            bucket.blob(f"{workspace_id}/{uploaded_source_blob}").upload_from_file(
+                file.file, content_type=file.content_type
+            )
+            metadata.update(
+                {
+                    "source_blob": uploaded_source_blob,
+                    "source_filename": file.filename,
+                    "source_content_type": file.content_type,
+                }
+            )
+
+    if strategy == "uploaded" and not image_records:
+        raise HTTPException(status_code=400, detail="Please upload at least one image.")
+
+    if uploaded_source_blob:
+        source_blob_path = uploaded_source_blob
+
+    if not source_blob_path:
+        raise HTTPException(
+            status_code=400,
+            detail="Source document is missing for this job. Generate an outline first.",
+        )
+
+    if strategy != "uploaded" and not job_id:
+        raise HTTPException(status_code=400, detail="Outline job_id is required for automatic image strategies.")
+
+    if strategy != "uploaded" and not metadata.get("outline_blob"):
+        raise HTTPException(status_code=400, detail="Generate an outline before requesting automatic images.")
+
+    metadata["image_strategy"] = strategy
+    _store_job_metadata(bucket, workspace_id, metadata)
+
+    plan_task_id = f"{workspace_id}-plan"
+    generate_slide_plan_task.apply_async(
+        kwargs={
+            "job_id": workspace_id,
+            "image_records": image_records,
+            "source_blob": source_blob_path,
+            "image_strategy": strategy,
+        },
+        task_id=plan_task_id,
+    )
+
+    return {"job_id": workspace_id, "plan_task_id": plan_task_id, "image_strategy": strategy}
 
 @app.post("/api/v1/creator/build/{job_id}", status_code=status.HTTP_202_ACCEPTED, tags=["PPT Creator"])
 async def build_presentation(job_id: str, slide_plan: List[dict]):

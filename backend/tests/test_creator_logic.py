@@ -2,7 +2,11 @@ import json
 from unittest.mock import MagicMock, patch
 
 # We will create both of these functions in the creator_logic module
-from backend.worker.creator_logic import extract_text_from_document, generate_slide_plan
+from backend.worker.creator_logic import (
+    extract_text_from_document,
+    generate_outline_from_text,
+    generate_slide_plan,
+)
 
 
 def test_extract_text_from_document_txt(tmp_path):
@@ -55,3 +59,28 @@ def test_generate_slide_plan():
         # Check that the function correctly parsed the JSON into a Python list
         assert isinstance(slide_plan, list)
         assert slide_plan[0]["slide_title"] == "AI in Healthcare"
+
+
+def test_generate_outline_from_text():
+    sample_text = "AI is transforming how teams collaborate across industries."
+
+    fake_outline = json.dumps([
+        {
+            "slide_title": "AI Overview",
+            "bullet_outline": ["Definition", "Key benefits"],
+        }
+    ])
+
+    with patch('backend.worker.creator_logic.model.generate_content') as mock_generate_content:
+        mock_response = MagicMock()
+        mock_response.text = fake_outline
+        mock_generate_content.return_value = mock_response
+
+        outline = generate_outline_from_text(sample_text, desired_slide_count=5)
+
+        mock_generate_content.assert_called_once()
+        prompt = mock_generate_content.call_args[0][0]
+        assert sample_text in prompt
+        assert "exactly 5" in prompt
+        assert isinstance(outline, list)
+        assert outline[0]['slide_title'] == 'AI Overview'

@@ -36,6 +36,10 @@ class Settings:
 
         self.gcs_bucket_name = os.getenv("GCS_BUCKET_NAME")
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
+        self.gemini_text_model = os.getenv("GEMINI_TEXT_MODEL", "gemini-2.0-flash")
+        self.gemini_image_model = os.getenv("GEMINI_IMAGE_MODEL", "imagen-3.0-fast")
+        self.unsplash_access_key = os.getenv("UNSPLASH_ACCESS_KEY")
+        self.unsplash_orientation = os.getenv("UNSPLASH_ORIENTATION", "landscape")
         self.service_account_email = os.getenv("SERVICE_ACCOUNT_EMAIL")
         self.use_local_storage = _env_bool(
             "USE_LOCAL_STORAGE", self.is_development

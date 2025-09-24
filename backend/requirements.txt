@@ -9,7 +9,7 @@ requests
 pytest
 httpx
 python-multipart
-google-generativeai
+google-genai>=0.2.0
 PyMuPDF
 python-docx
 imagehash

@@ -33,14 +33,54 @@ export async function enhancePresentation(pptFile, logoFile, creditsText) {
 }
 
 /**
- * Uploads source document and images to generate a slide plan.
- * @param {FileList} files - The files to upload.
+ * Uploads source material (file and/or text) to generate a slide outline.
+ * @param {Object} params
+ * @param {File|undefined} params.sourceFile
+ * @param {string|undefined} params.sourceText
+ * @param {number|undefined} params.slideCount
+ * @returns {Promise<object>}
+ */
+export async function generateOutline({ sourceFile, sourceText, slideCount } = {}) {
+  const formData = new FormData();
+
+  if (sourceFile) {
+    formData.append('source_file', sourceFile);
+  }
+
+  if (typeof slideCount === 'number' && Number.isFinite(slideCount)) {
+    formData.append('slide_count', String(slideCount));
+  }
+
+  if (sourceText && sourceText.trim().length > 0) {
+    formData.append('source_text', sourceText);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/creator/generate-outline`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Uploads ordered images for a prepared job to generate a full slide plan.
+ * @param {string} jobId - Workspace/job identifier returned from outline generation.
+ * @param {File[]} images - The ordered images to associate with slides.
  * @returns {Promise<object>} - The JSON response from the API.
  */
-export async function generateSlidePlan(files) {
+export async function generateSlidePlan(jobId, images, imageStrategy = 'uploaded') {
   const formData = new FormData();
-  for (const file of files) {
-    formData.append("files", file);
+  if (jobId) {
+    formData.append('job_id', jobId);
+  }
+  formData.append('image_strategy', imageStrategy);
+  for (const file of images) {
+    formData.append('files', file);
   }
 
   const response = await fetch(`${API_BASE_URL}/api/v1/creator/generate-plan`, {

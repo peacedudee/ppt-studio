@@ -4,7 +4,7 @@ import docx
 from pathlib import Path
 from typing import List
 from PIL import Image
-import google.generativeai as genai
+from google import genai
 
 from config import settings
 
@@ -15,13 +15,26 @@ class _NoopModel:
 
 
 # --- Configure the AI Model ---
+class _ClientTextModel:
+    def __init__(self, client: genai.Client, model_name: str):
+        self._client = client
+        self._model_name = model_name
+
+    def generate_content(self, contents):
+        return self._client.models.generate_content(
+            model=self._model_name,
+            contents=contents,
+        )
+
+
 try:
     if not settings.google_api_key:
         raise ValueError("GOOGLE_API_KEY is not configured")
-    genai.configure(api_key=settings.google_api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    genai_client = genai.Client(api_key=settings.google_api_key)
+    model = _ClientTextModel(genai_client, settings.gemini_text_model)
 except Exception as e:
     print(f"Error configuring Google AI: {e}")
+    genai_client = None
     model = _NoopModel()
 
 def extract_text_from_document(filepath: str) -> str:
@@ -132,6 +145,55 @@ def generate_content_for_batch(source_text: str, image_paths: List[Path]) -> Lis
                 "speaker_notes": "This might be due to an API issue or a problem with the prompt."
             }
         ] * len(image_paths)
+
+
+def generate_outline_from_text(source_text: str, desired_slide_count: int | None = None) -> List[dict]:
+    """Generate a slide-wise outline using only the provided source material."""
+    if isinstance(model, _NoopModel):
+        raise RuntimeError("Google AI Model is not configured. Check API Key.")
+
+    if desired_slide_count is not None:
+        try:
+            desired_slide_count = max(1, int(desired_slide_count))
+        except (TypeError, ValueError):
+            desired_slide_count = None
+
+    slide_guidance = (
+        f"- Create exactly {desired_slide_count} slide entries."
+        if desired_slide_count
+        else "- Create 6-10 slide entries depending on the richness of the material."
+    )
+
+    prompt = f"""
+You are an expert presentation strategist. Based only on the SOURCE TEXT below,
+produce a high-level outline for a compelling presentation.
+
+Guidelines:
+- Return ONLY valid JSON (no Markdown fences).
+{slide_guidance}
+- Each slide entry must contain:
+  * "slide_title": Title with ≤6 words.
+  * "bullet_outline": Array of 2-4 concise bullet sentences (≤90 characters each).
+- Focus on logical progression and ensure coverage of key ideas from the source.
+- Omit speaker notes, imagery, or styling instructions.
+
+SOURCE TEXT:
+---
+{source_text}
+---
+
+Respond with the JSON array only.
+"""
+
+    try:
+        response = model.generate_content(prompt)
+        cleaned = response.text.strip().replace("```json", "").replace("```", "")
+        outline = json.loads(cleaned)
+        if not isinstance(outline, list):
+            raise ValueError("Outline response is not a list")
+        return outline
+    except Exception as exc:
+        raise RuntimeError(f"Failed to generate outline: {exc}")
 
 
 def generate_slide_plan(source_text: str, image_filenames: List[str]) -> List[dict]:
