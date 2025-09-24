@@ -7,8 +7,11 @@ from pathlib import Path
 from typing import List, Optional
 from io import StringIO # Import StringIO for in-memory file handling
 from fastapi import FastAPI, File, UploadFile, Form, status, HTTPException
-from fastapi.responses import RedirectResponse, StreamingResponse
+from fastapi.responses import RedirectResponse, StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exception_handlers import http_exception_handler
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from google.cloud import storage
 from google.auth.exceptions import DefaultCredentialsError
@@ -81,11 +84,28 @@ app.add_middleware(
 
 @app.middleware("http")
 async def ensure_cors_headers(request, call_next):
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except StarletteHTTPException as exc:
+        response = await http_exception_handler(request, exc)
+    except RequestValidationError as exc:
+        response = JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"detail": exc.errors()},
+        )
+    except Exception as exc:
+        # Log and return generic error to avoid leaking details
+        print(f"Unhandled server error: {exc}")
+        response = JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal Server Error"},
+        )
+
     origin = request.headers.get("origin")
     if origin and origin in origins:
         response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Vary"] = response.headers.get("Vary", "") + (", " if response.headers.get("Vary") else "") + "Origin"
+        vary = response.headers.get("Vary")
+        response.headers["Vary"] = "Origin" if not vary else f"{vary}, Origin"
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
